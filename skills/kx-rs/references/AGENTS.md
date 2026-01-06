@@ -2,8 +2,14 @@
 
 目标：让 AI 在本仓库里写代码时，**优先使用框架通过 `#[derive(Sea)]` 自动生成的 struct / 方法**，用最少的试错完成增删改查与事务。
 
-> 参考示例：`bizs/ai-demo`（控制器、服务、安装/迁移、数据源注册）。
-> 参考示例：`ents/ai-demo`（实体定义、索引创建、迁移）。
+## 快速开始
+
+本文档提供了完整的开发规范和模板，涵盖：
+- 实体层（ents）：SeaORM 实体定义与自动生成的 Query/Modify 方法
+- 业务层（bizs）：控制器、服务、路由、安装/迁移、数据源注册
+- 常见问题与最佳实践
+
+参考现有模块示例（如 `bizs/gift`、`ents/gift` 等）快速上手。
 
 ---
 
@@ -82,9 +88,15 @@ let ret = SeaTrans::new()
 
 - 主键查询：`<T>::get(c, pk).await?`
 - 条件查多条：`<T>::sel().xxx_eq(...).all(c).await?`
-- 条件查 1 条：`<T>::sel().xxx_eq(...).one(c).await?`
-- 条件查 1 条 Option：`<T>::sel().xxx_eq(...).one_opt(c).await?`
+- 条件查 1 条 (必有)：`<T>::sel().xxx_eq(...).one(c).await?`（若不存在则报错）
+- 条件查 1 条 (可选)：`<T>::sel().xxx_eq(...).one_opt(c).await?`（返回 `Option<Model>`）
+- 检查是否存在：`<T>::sel().xxx_eq(...).exists(c).await?`（返回 `bool`）
 - 快速 Select（更宽松的数值类型匹配）：`<T>::sel().id_eq(1).all(c).await?`
+
+> **.one() vs .one_opt() vs .exists() 说明**：
+> - `one(c)`：返回 `Result<Model>`。如果数据库中没有匹配的记录，会直接返回 **"Record not found" 错误**。适用于你确信数据一定存在的场景（如通过 ID 查详情）。
+> - `one_opt(c)`：返回 `Result<Option<Model>>`。如果没有记录则返回 `Ok(None)`。适用于数据可能不存在，需要手动处理空值的场景。
+> - `exists(c)`：返回 `Result<bool>`。仅检查是否存在满足条件的记录，性能优于 `one_opt().is_some()`，常用于唯一性校验或逻辑存在性判断。
 
 > 小坑：`qry()` 的条件类型更严格（字段是 `i16` 就要传 `i16`），`sel()` 通常更宽松，适合快速写查询。
 
@@ -97,7 +109,7 @@ use kx_sea_orm::common::{Page, Paging};
 
 let mut qry: <T>Qry = <T>::qry();
 if !qry.has_order() { qry.desc_id(); }
-let ret: Page<<T>> = qry.select().is_del_eq(0).page(c, Paging::new(1, 20)).await?;
+let ret: Page<<T>> = qry.select().is_del_eq(false).page(c, Paging::new(1, 20)).await?;
 ```
 
 ### 4.3 新增/保存（Create / Upsert）
@@ -147,7 +159,7 @@ let mut req = data.cvt::<<T>Modify>()?;
 <T>::qry()
   .uid_eq(uid)
   .update_set(c, |m| {
-    m.set_is_del(1).set_deleted_at(now);
+    m.set_is_del(true).set_deleted_at(now);
   })
   .await?;
 ```
@@ -164,7 +176,7 @@ let mut req = data.cvt::<<T>Modify>()?;
 
 1) **优先使用 `<T>::sel() / <T>::qry() / <T>::m() / <T>::get() / <T>::del() / <T>::save_batch()`**，不要手写 SeaORM 的 `Entity::find()`/`ActiveModel`（除非确实需要底层能力）。
 2) 看到实体里有 `ai请注意` 注释：按注释执行（通常是 alias、索引、迁移等关键点）。
-3) 有软删字段时：查询默认补 `is_del_eq(0/false)`；删除优先走软删。
+3) 有软删字段时：查询默认补 `is_del_eq(false)`；删除优先走软删。
 4) 分页默认加排序：`if !qry.has_order() { qry.desc_id(); }`（避免结果不稳定）。
 5) 新增模块/新数据源：记得在业务 crate `lib.rs` 里加 `kx_sea_orm::ext_db_trait!(<ds>)`，并在 `install.rs` 里调用 `crate::ents::<Ds>Migrate::migrate(c).await?`。
 6) **实体/DTO struct 生成时 `derive` 里必须带 `schemars::JsonSchema`**（可先 `use schemars::JsonSchema;`，再写 `#[derive(..., JsonSchema, ...)]`），保证 Aide/OpenAPI 能正确生成 schema。
@@ -172,7 +184,7 @@ let mut req = data.cvt::<<T>Modify>()?;
 
 ---
 
-## 6) ent 模块编写规范（参考 `ents/ai-demo`）
+## 6) ent 模块编写规范
 
 ### 6.1 目录结构
 
@@ -250,7 +262,7 @@ pub struct Model {
     pub updated_at: i64,
     /// 是否删除（indexed 表示单字段索引）
     #[sea_orm(indexed)]
-    pub is_del: i16,
+    pub is_del: bool,
     /// 删除时间
     pub deleted_at: i64,
 }
@@ -338,9 +350,9 @@ kx-tools = { workspace = true, features = ["cvt"] }
 
 ### 7.2 `qry()` 的类型严格匹配问题
 
-**问题**：`<T>::qry().is_del_eq(0)` 编译报错 `the trait bound i16: From<i32> is not satisfied`
+**问题**：`<T>::qry().is_del_eq(false)` 编译报错 `the trait bound bool: From<i32> is not satisfied`
 
-**原因**：`qry()` 的条件方法对类型要求严格。如果字段是 `i16`，就必须传 `i16` 类型的值。
+**原因**：`qry()` 的条件方法对类型要求严格。如果字段是 `bool`，就必须传 `bool` 类型的值。
 
 **解决**：
 ```rust
@@ -348,12 +360,12 @@ kx-tools = { workspace = true, features = ["cvt"] }
 GiftMember::qry().is_del_eq(0).one(c).await?
 
 // 正确示例
-GiftMember::qry().is_del_eq(0i16).one(c).await?
+GiftMember::qry().is_del_eq(false).one(c).await?
 ```
 
 **建议**：如果只是简单查询，推荐使用 `sel()` 替代 `qry()`，`sel()` 对数值类型更宽松：
 ```rust
-GiftMember::sel().is_del_eq(0).one(c).await?  // 这样也可以
+GiftMember::sel().is_del_eq(false).one(c).await?  // 这样也可以
 ```
 
 ### 7.3 未使用的 import 警告

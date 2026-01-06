@@ -29,14 +29,16 @@ SeaTrans::new().transaction(|tx| {
 
 ```rust
 // 查询
-<T>::get(c, pk).await?                        // 主键查
-<T>::sel().uid_eq(uid).is_del_eq(0).one(c).await?  // 条件查
+<T>::get(c, pk).await?                            // 主键查
+<T>::sel().uid_eq(uid).is_del_eq(false).one(c).await?  // 条件查单条(必有)
+<T>::sel().uid_eq(uid).one_opt(c).await?          // 条件查单条(可选)
+<T>::sel().name_eq("test").exists(c).await?       // 检查是否存在
 
 // 分页
 let mut qry = <T>::qry();
 if !qry.has_order() { qry.desc_id(); }
 qry = qry.status_eq("active");
-qry.select().is_del_eq(0).page(c, paging).await?
+qry.select().is_del_eq(false).page(c, paging).await?
 
 // 保存
 let now = kx_tools::times::sys_time_ts();
@@ -51,20 +53,24 @@ req.save(c).await?
 
 // 批量更新
 <T>::qry().id_bt(100,200).update_set(c, |m| {
-    m.set_is_del(1).set_updated_at(now);
+    m.set_is_del(true).set_updated_at(now);
 }).await?
 
 // 软删,**关键点**需要设置主键
-<T>::m().set_id(id).set_is_del(1).set_updated_at(now).to_owned().update(c).await?
+<T>::m().set_id(id).set_is_del(true).set_updated_at(now).to_owned().update(c).await?
 ```
 
 ## 关键注意点
 
-1. **类型严格匹配**：`qry()` 要求严格类型，`is_del` 是 `i16` 需传 `0i16`
-2. **cvt feature**：使用 `kx_tools::cvt::Cvt` 需在 Cargo.toml 启用 `features = ["cvt"]`
-3. **Alias 命名**：来自 `table_name` 转大驼峰，不是文件名
-4. **软删查询**：始终加 `is_del_eq(0)` 或 `is_del_eq(0i16)`
-5. **分页排序**：`if !qry.has_order() { qry.desc_id(); }`
+1. **类型严格匹配**：`qry()` 要求严格类型，`is_del` 是 `bool` 需传 `false/true`；`sel()` 对数值类型更宽松
+2. **查询方法选择**：
+   - `one(c)` - 必定存在，不存在会报错
+   - `one_opt(c)` - 可能不存在，返回 `Option<Model>`
+   - `exists(c)` - 仅检查存在性，返回 `bool`，性能优于 `one_opt().is_some()`
+3. **cvt feature**：使用 `kx_tools::cvt::Cvt` 需在 Cargo.toml 启用 `features = ["cvt"]`
+4. **Alias 命名**：来自 `table_name` 转大驼峰，不是文件名
+5. **软删查询**：始终加 `is_del_eq(false)`
+6. **分页排序**：`if !qry.has_order() { qry.desc_id(); }`
 
 ## 详细规范
 
