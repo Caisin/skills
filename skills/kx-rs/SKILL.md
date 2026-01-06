@@ -35,6 +35,7 @@ SeaTrans::new().transaction(|tx| {
 // 分页
 let mut qry = <T>::qry();
 if !qry.has_order() { qry.desc_id(); }
+qry = qry.status_eq("active");
 qry.select().is_del_eq(0).page(c, paging).await?
 
 // 保存
@@ -48,10 +49,13 @@ req.save(c).await?
 // 更新
 <T>::m().set_id(id).set_updated_at(now).to_owned().update(c).await?
 
-// 软删
-<T>::qry().id_eq(id).update_set(c, |m| {
+// 批量更新
+<T>::qry().id_bt(100,200).update_set(c, |m| {
     m.set_is_del(1).set_updated_at(now);
 }).await?
+
+// 软删,**关键点**需要设置主键
+<T>::m().set_id(id).set_is_del(1).set_updated_at(now).to_owned().update(c).await?
 ```
 
 ## 关键注意点

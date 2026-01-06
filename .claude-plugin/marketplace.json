@@ -5,10 +5,12 @@
   },
   "plugins": [
     {
-      "name": "kx-rs",
-      "source": "./plugins/kx-rs",
+      "name": "kx-skills",
       "description": "kx-rs Rust 项目开发规范与 CRUD 模板",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/kx-rs"]
     }
   ]
 }
