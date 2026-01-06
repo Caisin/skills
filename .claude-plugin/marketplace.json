@@ -1,0 +1,14 @@
+{
+  "name": "skills",
+  "owner": {
+    "name": "hekx"
+  },
+  "plugins": [
+    {
+      "name": "kx-rs",
+      "source": "./plugins/kx-rs",
+      "description": "kx-rs Rust 项目开发规范与 CRUD 模板",
+      "version": "1.0.0"
+    }
+  ]
+}

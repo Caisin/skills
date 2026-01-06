@@ -1,0 +1,6 @@
+{
+  "name": "kx-rs",
+  "version": "1.0.0",
+  "description": "kx-rs Rust 项目开发规范与 CRUD 模板",
+  "skills": "./skills/"
+}
