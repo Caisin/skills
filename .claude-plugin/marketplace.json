@@ -11,6 +11,14 @@
       "source": "./",
       "strict": false,
       "skills": ["./skills/kx-rs"]
+    },
+    {
+      "name": "uview-pro",
+      "description": "Comprehensive knowledge of uView-Pro UI framework for Vue3 + TypeScript + uni-app",
+      "version": "1.0.0",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/uview-pro"]
     }
   ]
 }
