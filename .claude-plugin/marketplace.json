@@ -19,6 +19,14 @@
       "source": "./",
       "strict": false,
       "skills": ["./skills/uview-pro"]
+    },
+    {
+      "name": "uni-app-core",
+      "description": "Deep understanding of uni-app cross-platform framework, including Vue 2/3 compatibility, compiler logic, and platform-specific APIs.",
+      "version": "1.0.0",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/uni-app-core"]
     }
   ]
 }
