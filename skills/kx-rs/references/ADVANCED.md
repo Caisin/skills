@@ -63,7 +63,7 @@
 ### 历史表追踪
 
 ```rust
-#[derive(Clone, Sea, schemars::JsonSchema, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize, Default)]
+#[derive(Clone, Sea, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize, Default)]
 #[sea_orm(table_name = "order", comment = "订单")]
 #[kx(his_tb = "order_h")]  // 自动记录变更到 order_h 表
 pub struct Model {

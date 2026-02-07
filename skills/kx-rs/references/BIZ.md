@@ -50,74 +50,71 @@ pub async fn install() -> Result<()> {
 ## router.rs
 
 ```rust
-use aide::axum::{ApiRouter, routing::{get, post, put, delete}};
-use crate::ctl;
+use kx_axum::{axum::Router, routing::get};
+use crate::ctl::xxx_ctl::XxxCtl;
 
-pub fn apis() -> ApiRouter {
-    ApiRouter::new().nest("/xxx", ctl::xxx_ctl::apis())
+pub struct BizRouter;
+
+impl BizRouter {
+    pub fn apis() -> Router {
+        Router::new().nest("/xxx", XxxCtl::apis())
+    }
 }
 ```
 
 ## 控制器（ctl/xxx_ctl.rs）
 
-```rust
-use aide::axum::{ApiRouter, routing::{get, post, put, delete}};
-use axum::{Json, extract::Path};
-use kx_axum::{R, NR, AxumErr};
-use kx_sea_orm::{SeaOrms, common::{Page, Paging}};
-use kx_axum::ext::QsQuery;
-use crate::ents::xxx_table::*;
-use crate::SeaOrmExt;
-
-pub fn apis() -> ApiRouter {
-    ApiRouter::new()
-        .api_route("/page", get(page))
-        .api_route("/get/{id}", get(get_by_id))
-        .api_route("/save", post(save))
-        .api_route("/del/{id}", delete(del))
-}
-
-async fn page(QsQuery(mut qry): QsQuery<XxxTableQry>, QsQuery(paging): QsQuery<Paging>) -> Result<R<Page<XxxTable>>, AxumErr> {
-    let c = &mut SeaOrms::xxx().await?;
-    if !qry.has_order() { qry.desc_id(); }
-    let ret = qry.select().is_del_eq(false).page(c, paging).await?;
-    Ok(ret.into())
-}
-
-async fn get_by_id(Path(id): Path<i64>) -> Result<R<XxxTable>, AxumErr> {
-    let c = &mut SeaOrms::xxx().await?;
-    Ok(XxxTable::get(c, id).await?.into())
-}
-
-async fn save(Json(mut req): Json<XxxTableModify>) -> Result<R<XxxTable>, AxumErr> {
-    let c = &mut SeaOrms::xxx().await?;
-    let now = kx_tools::times::sys_time_ts();
-    if req.get_pk_val().is_err() { req.set_created_at(now).set_default().unset_id(); }
-    req.set_updated_at(now);
-    Ok(req.save(c).await?.into())
-}
-
-async fn del(Path(id): Path<i64>) -> Result<NR, AxumErr> {
-    let c = &mut SeaOrms::xxx().await?;
-    let now = kx_tools::times::sys_time_ts();
-    XxxTable::m().set_id(id).set_is_del(true).set_deleted_at(now).set_updated_at(now).to_owned().update(c).await?;
-    Ok(R::succ())
-}
-```
-
-### crud_api! 宏（快速替代手写控制器）
+> **重要**：Router 函数和 Handler 必须在同一 `impl` 块内，openapi-scan 才能正确扫描。
 
 ```rust
-use kx_axum::crud_api;
-crud_api!(crate::ents::xxx_table, XxxCtl, "xxx");
+use crate::ents::xxx_table::{XxxTable, XxxTableModify, XxxTableQry};
+use kx_axum::{
+    AxumErr, Json, R,
+    axum::Router,
+    axum::routing::{delete, get, post},
+    ext::QsQuery,
+    extract::Path,
+};
+use kx_sea_orm::common::{Page, Paging};
+use crate::svc::xxx_svc::XxxSvc;
 
-pub fn apis() -> ApiRouter {
-    ApiRouter::new()
-        .api_route("/all", get(XxxCtl::all))
-        .api_route("/page", get(XxxCtl::page))
-        .api_route("/save", post(XxxCtl::save))
-        .api_route("/get/{id}", get(XxxCtl::get))
-        .api_route("/del/{id}", delete(XxxCtl::del))
+pub struct XxxCtl;
+
+impl XxxCtl {
+    pub fn apis() -> Router {
+        Router::new()
+            .route("/", get(Self::page))
+            .route("/", post(Self::save))
+            .route("/{id}", get(Self::get))
+            .route("/{id}", delete(Self::del))
+    }
+
+    /// 分页查询
+    async fn page(
+        QsQuery(req): QsQuery<XxxTableQry>,
+        QsQuery(page): QsQuery<Paging>,
+    ) -> Result<R<Page<XxxTable>>, AxumErr> {
+        let ret = XxxSvc::page(req, page).await?;
+        Ok(ret.into())
+    }
+
+    /// 详情
+    async fn get(Path(id): Path<i64>) -> Result<R<XxxTable>, AxumErr> {
+        let ret = XxxSvc::get(id).await?;
+        Ok(ret.into())
+    }
+
+    /// 保存
+    async fn save(Json(req): Json<XxxTableModify>) -> Result<R<XxxTable>, AxumErr> {
+        let ret = XxxSvc::save(req).await?;
+        Ok(ret.into())
+    }
+
+    /// 删除
+    async fn del(Path(id): Path<i64>) -> Result<R<()>, AxumErr> {
+        XxxSvc::del(id).await?;
+        Ok(R::succ())
+    }
 }
 ```
 
@@ -125,27 +122,58 @@ pub fn apis() -> ApiRouter {
 
 ```rust
 use anyhow::Result;
-use kx_sea_orm::SeaOrms;
-use crate::ents::xxx_table::*;
+use crate::ents::xxx_table::{XxxTable, XxxTableModify, XxxTableQry};
+use kx_sea_orm::{SeaOrms, common::{Page, Paging}};
+use kx_tools::times;
 use crate::SeaOrmExt;
 
-pub async fn create_xxx(name: &str, uid: i64) -> Result<XxxTable> {
-    let c = &mut SeaOrms::xxx().await?;
-    let now = kx_tools::times::sys_time_ts();
-    let mut m = XxxTable::m();
-    m.set_name(name).set_uid(uid).set_created_at(now).set_updated_at(now).set_default().unset_id();
-    m.save(c).await
+pub struct XxxSvc;
+
+impl XxxSvc {
+    pub async fn page(mut qry: XxxTableQry, paging: Paging) -> Result<Page<XxxTable>> {
+        let c = &mut SeaOrms::xxx().await?;
+        if !qry.has_order() { qry.desc_id(); }
+        let ret = qry.select().is_del_eq(false).page(c, paging).await?;
+        Ok(ret)
+    }
+
+    pub async fn get(id: i64) -> Result<XxxTable> {
+        let c = &mut SeaOrms::xxx().await?;
+        let ret = XxxTable::sel().id_eq(id).is_del_eq(false).one(c).await?;
+        Ok(ret)
+    }
+
+    pub async fn save(mut req: XxxTableModify) -> Result<XxxTable> {
+        let c = &mut SeaOrms::xxx().await?;
+        let now = times::sys_time_ts();
+        if req.get_pk_val().is_err() { req.set_created_at(now).set_default().unset_id(); }
+        req.set_updated_at(now);
+        let ret = req.save(c).await?;
+        Ok(ret)
+    }
+
+    pub async fn del(id: i64) -> Result<()> {
+        let c = &mut SeaOrms::xxx().await?;
+        let now = times::sys_time_ts();
+        XxxTable::m().set_id(id).set_is_del(true).set_deleted_at(now).set_updated_at(now).to_owned().update(c).await?;
+        Ok(())
+    }
+    
+    pub async fn real_del(id: i64) -> Result<()> {
+        let c = &mut SeaOrms::xxx().await?;
+        XxxTable::del(c, id).await?;
+        Ok(())
+    }
 }
 ```
 
 ## DTO（dto/xxx_dto.rs）
 
 ```rust
-use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 /// 创建请求
-#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CreateXxxReq {
     /// 名称
     pub name: String,
@@ -167,7 +195,6 @@ publish.workspace = true
 
 [dependencies]
 anyhow = { workspace = true }
-schemars = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 kx-axum = { workspace = true }

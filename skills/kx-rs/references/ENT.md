@@ -47,7 +47,7 @@ use kx_sea_common::Sea;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Sea, schemars::JsonSchema, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize, Default)]
+#[derive(Clone, Sea, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize, Default)]
 // ai请注意,别名是 table_name 转大驼峰,当前别名为 XxxYyy
 #[sea_orm(table_name = "xxx_yyy", comment = "表描述")]
 pub struct Model {
@@ -118,7 +118,6 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
-schemars = { workspace = true }
 anyhow = { workspace = true }
 chrono = { workspace = true, features = ["serde"] }
 kx-sea-common = { workspace = true }
