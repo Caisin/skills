@@ -7,7 +7,7 @@
     {
       "name": "kx-rs",
       "description": "kx-rs Rust 项目开发规范与 CRUD 模板",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "source": "./",
       "strict": false,
       "skills": ["./skills/kx-rs"]
