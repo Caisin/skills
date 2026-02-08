@@ -105,10 +105,12 @@ export const overridesPreferences = defineOverridesPreferences({
   app: {
     name: import.meta.env.VITE_APP_TITLE,
     // accessMode: 'frontend' | 'backend',
+    // apiSecurity: false,       // API 加密开关
     // defaultHomePath: '/dashboard',
+    // enableConsole: false,     // 控制台开关
+    // enableRefreshToken: true,
     // locale: 'zh-CN',
     // loginExpiredMode: 'modal' | 'page',
-    // enableRefreshToken: true,
   },
 });
 ```

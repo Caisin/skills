@@ -7,6 +7,7 @@
 - [VbenDrawer](#vbendrawer)
 - [Page Component](#page-component)
 - [Alert/Confirm/Prompt](#alertconfirmprompt)
+- [Third-Party Login](#third-party-login)
 
 ## VbenForm
 
@@ -94,6 +95,7 @@ function onSubmit(values: Record<string, any>) {
 | `dependencies` | `object` | Field dependencies for conditional rendering |
 | `renderComponentContent` | `() => Record<string, () => VNode>` | Render component slots |
 | `colon` | `boolean` | Show colon after label |
+| `valueFormat` | `(value, set) => void` | Custom value transformation on getValues/submit |
 
 ### Form API Methods
 ```typescript
@@ -118,6 +120,21 @@ formApi.resetForm();
 formApi.updateSchema([{ fieldName: 'username', componentProps: { disabled: true } }]);
 ```
 
+### valueFormat - Custom Value Transformation
+Transform field values when calling `getValues()` or on submit:
+```typescript
+{
+  component: 'RangePicker',
+  fieldName: 'dateRange',
+  label: '日期范围',
+  valueFormat: (value, set) => {
+    if (!value) return;
+    const [start, end] = value;
+    set('dateRange', [dayjs(start).startOf('day').unix(), dayjs(end).endOf('day').unix()]);
+  },
+}
+```
+
 ### ApiSelect - Remote Data Select
 ```typescript
 {
@@ -126,6 +143,8 @@ formApi.updateSchema([{ fieldName: 'username', componentProps: { disabled: true 
     api: getAllMenusApi,
     afterFetch: (data) => data.map(item => ({ label: item.name, value: item.id })),
     autoSelect: 'first',  // Auto-select first option
+    // Custom label rendering with labelFn (overrides labelField)
+    labelFn: (item) => `${item.name} (${item.code})`,
   },
   fieldName: 'menuId',
   label: '菜单',
@@ -457,4 +476,46 @@ prompt<string>({
   icon: 'question',
   componentProps: { placeholder: '输入内容...' },
 }).then(value => { /* user input */ });
+```
+
+## Third-Party Login
+
+The login component supports configurable third-party login providers via `thirdPartyLogins` prop:
+
+```typescript
+import type { ThirdPartyLogin } from '@vben/common-ui';
+import { SvgGithubIcon } from '@vben/icons';
+
+const thirdPartyLogins: ThirdPartyLogin[] = [
+  {
+    name: 'github',
+    icon: SvgGithubIcon,
+    tooltip: 'GitHub 登录',
+    onClick: () => { /* handle github login */ },
+  },
+  {
+    name: 'wechat',
+    icon: SvgWeChatIcon,
+    tooltip: '微信登录',
+    onClick: () => { /* handle wechat login */ },
+  },
+];
+```
+
+Usage in login view:
+```vue
+<AuthenticationLogin
+  :third-party-logins="thirdPartyLogins"
+  @submit="authLogin"
+/>
+```
+
+`ThirdPartyLogin` type:
+```typescript
+interface ThirdPartyLogin {
+  name: string;
+  icon: Component;
+  tooltip?: string;
+  onClick?: () => void;
+}
 ```

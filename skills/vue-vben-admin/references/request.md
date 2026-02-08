@@ -65,6 +65,16 @@ function createRequestClient(baseURL: string) {
 export const requestClient = createRequestClient(apiURL, { responseReturn: 'data' });
 ```
 
+### RequestClient Utility Methods
+```typescript
+// Get the base URL
+const baseUrl = requestClient.getBaseUrl();
+
+// Get full URL (baseURL + path)
+const fullUrl = requestClient.getFullUrl('/api/user/info');
+// e.g., "http://localhost:5555/api/user/info"
+```
+
 ## API Definition Patterns
 
 ### Basic CRUD API
@@ -149,6 +159,7 @@ export async function getTableListApi(params?: PageFetchParams) {
 ```
 
 ### File Upload API
+The upload method accepts `Blob | File | string` as the file parameter:
 ```typescript
 export function upload_file(params: Record<string, any>) {
   const formData = new FormData();
