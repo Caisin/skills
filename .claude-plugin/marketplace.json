@@ -5,6 +5,14 @@
   },
   "plugins": [
     {
+      "name": "vue-vben-admin",
+      "description": "Vue Vben Admin v5 企业级后台管理框架开发指南",
+      "version": "1.0.0",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/vue-vben-admin"]
+    },
+    {
       "name": "kx-rs",
       "description": "kx-rs Rust 项目开发规范与 CRUD 模板",
       "version": "1.0.2",
