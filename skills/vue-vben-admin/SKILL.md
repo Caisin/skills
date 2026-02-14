@@ -127,7 +127,7 @@ function onAction({ code, row }) {
 
 - **框架架构**: [references/architecture.md](references/architecture.md) — Monorepo 结构、启动流程、适配器模式、包架构、环境配置
 - **路由与权限**: [references/routing.md](references/routing.md) — 路由定义、meta 选项、前端/后端权限模式、路由守卫、权限指令
-- **组件使用**: [references/components.md](references/components.md) — VbenForm、VxeTable、VbenModal、VbenDrawer、Page、Alert/Confirm/Prompt
+- **组件使用**: [references/components.md](references/components.md) — 组件索引，各组件文档见 `references/components/` 目录
 - **请求与 API**: [references/request.md](references/request.md) — RequestClient 配置、API 定义模式、Auth Store、Mock 后端
 
 ## 关键文件位置 (以 playground 为例)

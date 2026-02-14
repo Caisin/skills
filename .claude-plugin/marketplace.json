@@ -7,7 +7,7 @@
     {
       "name": "vue-vben-admin",
       "description": "Vue Vben Admin v5 企业级后台管理框架开发指南",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "source": "./",
       "strict": false,
       "skills": ["./skills/vue-vben-admin"]
