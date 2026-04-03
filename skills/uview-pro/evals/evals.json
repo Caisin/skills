@@ -1,0 +1,22 @@
+{
+  "skill_name": "uview-pro",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "给我一个 uView-Pro 的 Collapse 示例，顺便说明 open 和 disabled 的区别。",
+      "expected_output": "应命中 uview-pro，给最小组件示例，并解释关键参数差异。",
+      "files": [
+        "skills/uview-pro/SKILL.md",
+        "skills/uview-pro/references/patterns.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "uni-app 的 navigateBack 在小程序和 App 上有什么差异？",
+      "expected_output": "不应继续停在 uview-pro，应明确 handoff 到 uni-app-core。",
+      "files": [
+        "skills/uview-pro/SKILL.md"
+      ]
+    }
+  ]
+}

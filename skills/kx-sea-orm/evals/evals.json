@@ -1,0 +1,23 @@
+{
+  "skill_name": "kx-sea-orm",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "给我一套 kx 里能用的 SeaORM 示例，分成模型定义、迁移、CRUD、事务、多数据源和多表查询，而且不要用 relation 外键。",
+      "expected_output": "应命中 kx-sea-orm，按六段式给出示例，并明确外键使用普通字段 + service 校验 + 事务，不使用 belongs_to/has_many/find_with_related。",
+      "files": [
+        ".agents/skills/kx-sea-orm/SKILL.md",
+        ".agents/skills/kx-sea-orm/references/patterns.md",
+        ".agents/skills/kx-sea-orm/references/codegen-map.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我的 Rust 异步代码报 E0277，future 不能在线程间发送，帮我定位一下。",
+      "expected_output": "不应继续展开 SeaORM 示例，应明确 handoff 到 rust-router 或并发问题专用 skill，而不是误触发 kx-sea-orm。",
+      "files": [
+        ".agents/skills/kx-sea-orm/SKILL.md"
+      ]
+    }
+  ]
+}

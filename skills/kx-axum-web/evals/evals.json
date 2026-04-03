@@ -1,0 +1,23 @@
+{
+  "skill_name": "kx-axum-web",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "给我一个 kx-axum 的 web 层模板，包含 ctl、router、install，列表和保存接口直接复用 Query/ModifyModel。",
+      "expected_output": "应命中 kx-axum-web，给出 ctl/page/save/router/install 模板，并明确 Query/ModifyModel 来自 kx-sea-orm 生成能力。",
+      "files": [
+        ".agents/skills/kx-axum-web/SKILL.md",
+        ".agents/skills/kx-axum-web/references/patterns.md",
+        ".agents/skills/kx-axum-web/references/kx-axum-map.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "帮我写一个 SeaORM 模型和 auto_migrate 迁移模板，还要禁止 relation 外键。",
+      "expected_output": "不应继续停在 web 层 skill，应明确 handoff 到 kx-sea-orm，而不是误触发 kx-axum-web。",
+      "files": [
+        ".agents/skills/kx-axum-web/SKILL.md"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "skill_name": "kx-sdk-aigc",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我要给 OpenAI 风格 provider 新增一个非流式 API，怎么组织 trait 和 DTO？",
+      "expected_output": "应定位到 src/api/openai/non_stream/，强调单 HTTP API 一个 trait 文件、DTO 与 trait 邻近、默认复用 get_ret/post_json_ret。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Gemini 的流式输出我想直接在发送层转成平台事件对象，可以吗？",
+      "expected_output": "应明确不建议；发送层应继续返回原始 AigcStream(meta + raw)，SSE decode 与 provider mapper 放到 streaming/。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "proxy 这里我想顺手做跨协议翻译，把 OpenAI 请求转成 Gemini DTO。",
+      "expected_output": "应明确拒绝这种方向：proxy 第一阶段只做同协议原始透传，不做跨协议翻译或统一 DTO 网关。",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "如果 provider 所有请求都需要固定 header，应该在每个 API trait 里重复补吗？",
+      "expected_output": "应指出优先覆写 provider SDK 的 before_send() 统一注入，而不是在每个单 API trait 重复 header/query 样板。",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "我要补 request_id、usage、attempt_no、provider_hint 这些链路字段，应该先看哪里？",
+      "expected_output": "应定位到 proxy/observe 与 AigcSdk hooks，强调链路字段与 Usage/UsageSummary/StreamFinish 等事件的职责边界。",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "这是个普通 wx-app SDK 的 token 接口，不是 aigc。",
+      "expected_output": "应识别为非 sdks/aigc 场景，并 handoff 到 kx-sdk。",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "skill_name": "kx-sdk",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我要在 sdks/wx-app 里新增一个 access_token 相关接口，怎么保持和现有风格一致？",
+      "expected_output": "归类为一般 sdks/ 能力扩展，优先回看 wx-app AccessTokenQry 模式，强调 trait + DTO 邻近组织 + impl Future。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "这个第三方平台接入该放 sdks 还是 crates？如果后面多个 provider 都可能复用部分 RSA 能力呢？",
+      "expected_output": "先区分 provider 适配层与纯基础能力；平台接入默认落 sdks/，共用 RSA 扩展优先落 crates/kx-rsa 一类公共基础库。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "为什么这里不建议在 SDK trait 上用 async_trait？",
+      "expected_output": "解释当前仓库 SDK trait 默认返回 impl Future，以保持与既有风格一致并减少额外宏依赖。",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "新 SDK 的请求 DTO、token store、reqwest 请求样板应该分别放哪？",
+      "expected_output": "应给出 trait/DTO/宿主 SDK 的分层落位，并强调复用 GetClient、GetAccessToken、TokenStore、ToRet 等公共能力。",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "这个需求其实是 sdks/aigc 里的 OpenAI 风格接口，不是普通 provider SDK。",
+      "expected_output": "明确指出这已进入 sdks/aigc 专门场景，应 handoff 到 kx-sdk-aigc，而不是继续用通用 kx-sdk。",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "skill_name": "kx-rs",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我要新建一个 kx-rs 实践层项目，包含 bins bizs ents，最小骨架应该怎么搭？",
+      "expected_output": "归类为下游实践层项目骨架问题，优先使用 project-skeleton reference，明确 bins/bizs/ents 是下游业务仓库约定，并给出最小搭建顺序。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "这个保存接口要按 kx-rs 方式写 svc、ctl、router，分页和软删也要带上，先怎么落？",
+      "expected_output": "归类为实践层 CRUD 问题，优先使用 crud-workflow reference，给出 svc/ctl/router 的推荐顺序，并强调软删过滤与稳定排序。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "业务侧用 #[derive(Sea)] 时，sel 和 qry 怎么选，save 为什么有时候会走 update？",
+      "expected_output": "归类为实践层 + 框架边界问题，优先使用 sea-usage reference，解释 sel/qry/save 选择规则，必要时再提示回看 derives/codegen。",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "为什么我的控制器 openapi-scan 扫不到？router 和 handler 应该怎么写？",
+      "expected_output": "归类为 openapi-scan 兼容问题，优先使用 openapi-scan reference，强调同一 impl、Self::method、Router 返回类型、{id} 路径等约定。",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "这个实践层写法的边界我拿不准，应该回看 derives、crates、sdks 还是 tools？",
+      "expected_output": "归类为实践层 + 源码回溯问题，优先使用 source-navigation reference，用问题到目录的方式给出回看入口。",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "这个 Rust trait bound 和 Send 错误怎么修？",
+      "expected_output": "识别为非 kx-rs 主场景，应明确 handoff 到 rust-router，而不是继续展开实践层模板。",
+      "files": []
+    }
+  ]
+}

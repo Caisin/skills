@@ -1,0 +1,17 @@
+{
+  "skill_name": "kx-skill-creator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我要在当前仓库里新增一个 repo-local skill，最好把 SKILL.md、reference 和 evals 一起生成。",
+      "expected_output": "应命中 kx-skill-creator，并优先建议运行内置 skill_tool.py init 命令，而不是纯手写空目录。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我想研究全局 skill-creator 的提示词设计哲学，不一定只限这个仓库。",
+      "expected_output": "应识别这超出 repo-local skill 维护边界，不应只停留在 kx-skill-creator 的本地脚本层面。",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "skill_name": "uni-app-core",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "uni-app 的 navigateTo 和 setStorage 在 H5 与小程序上有什么兼容差异？",
+      "expected_output": "应命中 uni-app-core，优先说明平台边界，再给最小 API 示例，并引用 api.md。",
+      "files": [
+        "skills/uni-app-core/SKILL.md",
+        "skills/uni-app-core/references/patterns.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "帮我写一个 uView-Pro 的 ActionSheet 示例。",
+      "expected_output": "不应继续停在 uni-app-core，应明确 handoff 到 uview-pro。",
+      "files": [
+        "skills/uni-app-core/SKILL.md"
+      ]
+    }
+  ]
+}

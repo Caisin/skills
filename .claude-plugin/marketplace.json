@@ -1,40 +1,108 @@
 {
   "name": "skills",
   "owner": {
-    "name": "hekx"
+    "name": "Caisin"
   },
   "plugins": [
     {
-      "name": "vue-vben-admin",
-      "description": "Vue Vben Admin v5 企业级后台管理框架开发指南",
-      "version": "1.0.1",
+      "name": "kx-entry",
+      "description": "kx 仓库任务入口与路由 skill",
+      "version": "1.1.0",
       "source": "./",
       "strict": false,
-      "skills": ["./skills/vue-vben-admin"]
+      "skills": [
+        "./skills/kx-entry"
+      ]
     },
     {
       "name": "kx-rs",
-      "description": "kx-rs Rust 项目开发规范与 CRUD 模板",
-      "version": "1.0.2",
+      "description": "kx-rs 实践层开发与分层落地规范",
+      "version": "1.1.0",
       "source": "./",
       "strict": false,
-      "skills": ["./skills/kx-rs"]
+      "skills": [
+        "./skills/kx-rs"
+      ]
     },
     {
-      "name": "uview-pro",
-      "description": "Comprehensive knowledge of uView-Pro UI framework for Vue3 + TypeScript + uni-app",
-      "version": "1.0.0",
+      "name": "kx-sea-orm",
+      "description": "SeaORM 与 #[derive(Sea)] 示例专用 skill",
+      "version": "1.1.0",
       "source": "./",
       "strict": false,
-      "skills": ["./skills/uview-pro"]
+      "skills": [
+        "./skills/kx-sea-orm"
+      ]
+    },
+    {
+      "name": "kx-axum-web",
+      "description": "kx-axum web 层 ctl/router/install 模板",
+      "version": "1.1.0",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/kx-axum-web"
+      ]
+    },
+    {
+      "name": "kx-sdk",
+      "description": "sdks/ 第三方接入与 SDK 封装规范",
+      "version": "1.1.0",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/kx-sdk"
+      ]
+    },
+    {
+      "name": "kx-sdk-aigc",
+      "description": "sdks/aigc 平台 API、streaming 与 proxy 规范",
+      "version": "1.1.0",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/kx-sdk-aigc"
+      ]
+    },
+    {
+      "name": "kx-skill-creator",
+      "description": "repo-local skill 创建、维护与校验工具",
+      "version": "1.1.0",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/kx-skill-creator"
+      ]
     },
     {
       "name": "uni-app-core",
-      "description": "Deep understanding of uni-app cross-platform framework, including Vue 2/3 compatibility, compiler logic, and platform-specific APIs.",
-      "version": "1.0.0",
+      "description": "uni-app 跨端框架核心 API 与兼容性说明",
+      "version": "1.1.0",
       "source": "./",
       "strict": false,
-      "skills": ["./skills/uni-app-core"]
+      "skills": [
+        "./skills/uni-app-core"
+      ]
+    },
+    {
+      "name": "uview-pro",
+      "description": "uView-Pro 组件库用法与模板",
+      "version": "1.1.0",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/uview-pro"
+      ]
+    },
+    {
+      "name": "vue-vben-admin",
+      "description": "Vue Vben Admin v5 开发模板与架构说明",
+      "version": "1.1.0",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/vue-vben-admin"
+      ]
     }
   ]
 }

@@ -1,96 +1,170 @@
 ---
 name: kx-rs
-description: kx-rs Rust 后端框架开发规范与 CRUD 模板。当进行 Rust 后端开发时使用，包括：(1) 创建 kx-rs 框架新项目（含 openapi-scan 自动生成 swagger 文档）(2) 创建/编辑 SeaORM 实体（ents/）(3) 编写业务服务层 CRUD（svc/）(4) 编写控制器和路由（ctl/ + router.rs，axum Router）(5) 使用 #[derive(Sea)] 自动生成的 Query/Modify/Select (6) 数据库连接与事务处理 (7) 分页查询与软删除 (8) 响应类型 R<T> 与错误处理 AxumErr (9) openapi-scan 文档扫描兼容 (10) 外部项目引入 kx 框架包。触发场景：用户提到 kx-rs、kx 框架、创建 kx 项目、SeaORM 实体、CRUD 服务、axum 控制器、R<T> 响应、AxumErr、业务模块开发、kx Cargo.toml 配置、openapi-scan、swagger 文档生成。
+description: |
+  Use when 任务已经明确进入 kx-rs 实践层开发，或需要从实践层问题回溯框架源码入口。
+
+  触发场景：
+  - 讨论 bins/bizs/ents 的组织与 CRUD 落地
+  - 调整 svc/ctl/router/install 的职责分层与装配顺序
+  - 调整 ctl/router 以兼容 openapi-scan
+  - 需要判断实践层问题该回看 derives/crates/sdks/tools 的哪里
+
+  触发词：bins、bizs、ents、CRUD、控制器、路由、Service、OpenAPI、openapi-scan、install、实践层
 ---
 
-# kx-rs 开发规范
+# kx-rs
 
-优先使用 `#[derive(Sea)]` 自动生成的方法，用最少试错完成 CRUD。生成的代码必须兼容 openapi-scan 静态扫描。
+`kx-rs` 是实践层开发专用 skill。
+它负责指导**下游业务仓库约定**下的 `bins/` / `bizs/` / `ents/` 分层落地，以及在需要时指出应回看的框架源码目录。
 
-## 创建新项目
+> 注意：当前工作区没有 `bizs/` 或 `bins/`，相关结构应明确标注为“下游业务仓库约定”，不要说成当前仓库事实。
 
-用户要求创建 kx-rs 项目时 → 参考 [TEMPLATE.md](references/TEMPLATE.md) 生成完整项目结构（含 build.rs openapi-scan 集成）。
+## 适用边界
 
-## 引入方式
+### 适用
 
-```toml
-kx = { version = "0.1", registry = "hekx", features = ["axum", "tools", "sea-orm", "cache"] }
-# 按需加: "derive-sea", "ents-base", "ents-log", "ed", "global", "tracing", "i18n" 等
+- 新建实践层项目骨架
+- 编写 `bizs/`、`bins/` 的模块组织、装配与路由
+- 规划 `svc/ctl/router/install/dto` 的职责边界
+- 调整 ctl / router / handler 以兼容 `openapi-scan`
+- 实践层写法遇到边界，需要回看 `derives/`、`crates/`、`sdks/`、`tools/`
+
+### 不适用
+
+- 纯 Rust 编译器 / trait / lifetime / Send / Sync 问题
+  - 交给 `rust-router`
+- 纯 bug、回归、测试失败排查
+  - 交给 `systematic-debugging`
+- 仍在讨论产品方案、任务拆分、重构计划
+  - 交给 `brainstorming` 或 `writing-plans`
+- 明确要的是 SeaORM / `#[derive(Sea)]` 六段式示例（模型、迁移、CRUD、事务、多数据源、多表）
+  - 交给 `kx-sea-orm`
+- 明确要的是 `get/sel/qry/m/update_set/auto_migrate` 这类实体/迁移模板
+  - 交给 `kx-sea-orm`
+- 明确要的是 `kx-axum` 的 ctl/router/install、extractor、`R<T>` / `AxumErr`、`crud_api!` 等 web 层模板
+  - 交给 `kx-axum-web`
+- 纯 `sdks/` 第三方接入与 SDK 风格问题
+  - 交给 `kx-sdk`
+
+## 任务分型与 reference 选择
+
+| 任务类型 | 先读什么 | 结果应该聚焦什么 |
+| --- | --- | --- |
+| 新建实践层项目 / 模块骨架 | `references/project-skeleton.md` | 目录与安装顺序 |
+| 日常 CRUD、控制器、服务、路由 | `references/crud-workflow.md` | svc/ctl/router/install 的落地顺序与职责边界 |
+| `openapi-scan` 兼容性 | `references/openapi-scan.md` | 控制器/路由写法约束 |
+| 不确定该回看哪个框架目录 | `references/source-navigation.md` | 源码回溯入口 |
+| 明确要 SeaORM 模型 / 迁移 / CRUD / 事务模板 | 直接切 `kx-sea-orm` | 不在 `kx-rs` 里重复展开模板 |
+
+必要时可读多份 reference，但只加载当前任务真正需要的部分。
+
+## 最小落地顺序
+
+每次命中后，按这个顺序处理：
+
+1. 先判断是“实践层分层落地”还是“实践层分层落地 + 框架源码回溯”
+2. 再选择最相关的 1~2 份 reference
+3. 优先回答目录、模块边界、职责分配与装配顺序
+4. 如果问题已下钻到 SeaORM 代码模板，明确 handoff 到 `kx-sea-orm`
+5. 如果问题已经越过 `kx-rs` 边界，明确 handoff 到更合适的 skill
+
+## 最常强调的边界
+
+### 1. 实践层目录边界
+
+```text
+ents/* 负责实体、迁移、索引
+bizs/* 负责 svc/ctl/router/install/dto
+bins/* 负责装配、配置与运行入口
 ```
 
-## CRUD 速查
+### 2. 控制器边界
 
-`<T>` = 实体 Alias（来自 `table_name` 转大驼峰，非文件名）。自动生成 `<T>Qry` / `<T>Modify` / `<T>Entity`。
-
-```rust
-let c = &mut SeaOrms::xxx().await?;  // 连接（需 lib.rs 注册 ext_db_trait!(xxx)）
-
-// 查询
-<T>::get(c, pk).await?                                   // 主键查
-<T>::sel().uid_eq(uid).is_del_eq(false).one(c).await?     // 条件查(必有，不存在报错)
-<T>::sel().uid_eq(uid).one_opt(c).await?                  // 条件查(可选，返回 Option)
-<T>::sel().name_eq("test").exists(c).await?                // 存在性检查(返回 bool)
-
-// 分页
-let mut qry = <T>::qry();
-if !qry.has_order() { qry.desc_id(); }                   // 分页必须有排序
-qry.select().is_del_eq(false).page(c, paging).await?
-
-// 保存（Upsert）
-let now = kx_tools::times::sys_time_ts();
-if req.get_pk_val().is_err() { req.set_created_at(now).set_default().unset_id(); }
-req.set_updated_at(now);
-req.save(c).await?
-
-// 更新（链式 set 后需 .to_owned() 再 .update()）
-<T>::m().set_id(id).set_updated_at(now).to_owned().update(c).await?
-
-// 批量更新
-<T>::qry().id_bt(100,200).update_set(c, |m| { m.set_is_del(true); }).await?
-
-// 软删（推荐）/ 物理删除
-<T>::m().set_id(id).set_is_del(true).set_updated_at(now).to_owned().update(c).await?
-<T>::del(c, pk).await?                                    // 物理删除（谨慎）
+```text
+ctl/ 保持薄，只负责参数接收、调用 service、返回统一结果
+不要把事务、多表组装、复杂业务校验塞进 ctl/
 ```
 
-## 控制器模式（openapi-scan 兼容）
+### 3. SeaORM 模板边界
 
-Router 函数和 Handler **必须在同一 `impl Xxx` 块内**，扫描器才能关联路由与参数类型。
-
-```rust
-pub struct XxxCtl;
-impl XxxCtl {
-    pub fn apis() -> Router {                              // 非 async、无参、返回 Router
-        Router::new()
-            .route("/", get(Self::page))                   // Handler 用 Self::method
-            .route("/{id}", get(Self::get))
-    }
-    /// 分页查询                                            // /// 注释 → swagger summary
-    async fn page(QsQuery(req): QsQuery<XxxQry>, QsQuery(p): QsQuery<Paging>) -> Result<R<Page<Xxx>>, AxumErr> { ... }
-}
+```text
+如果用户明确要模型定义、迁移、通用 CRUD、事务、多数据源或多表操作示例，直接告诉他使用 kx-sea-orm。
+不要在 kx-rs 里重复展开 qry()/sel()/m()/auto_migrate() 的详细模板。
 ```
 
-Handler 签名：`async fn xxx() -> Result<R<T>, AxumErr>`，`anyhow::Error` 自动转 `AxumErr`。
+## 常见错误 vs 正确做法
 
-```rust
-R::ok(data) / R::succ() / R::err("msg") / R::un_auth("msg") / R::forbid("msg") / R::not_found("msg")
-data.into()  // From<T> 自动包装为 R::ok(data)，NR = R<()>
+### 常见错误
+
+```text
+❌ 明明在问实践层模块怎么拆，却直接展开整套 SeaORM 模型/迁移模板
+❌ 把控制器、服务、装配顺序混在一起说，不区分 svc/ctl/router/install
+❌ 明明是 practice 层问题，却直接钻进 derives/ 或 crates/ 全仓乱找
+❌ 用户已经明确要 SeaORM 示例，却还停在 kx-rs 里含混回答
 ```
 
-## 关键规则
+### 正确做法
 
-1. `qry()` 类型严格（`bool` 字段必须传 `bool`），`sel()` 更宽松，简单查询优先用 `sel()`
-2. 有软删字段时查询始终加 `is_del_eq(false)`
-3. DTO/实体 struct 字段必须写 `/// xxx` 文档注释（openapi-scan 从注释生成 schema）
-4. 使用 `kx_tools::cvt::Cvt` 需启用 `features = ["cvt"]`
-5. `qry().select()` 可将 Query 转为 Select
-6. **openapi-scan 兼容**：ctl 用 `impl Struct` + `Router`（非 `ApiRouter`），Handler 用 `Self::method` 引用，路径参数用 `{id}`（非 `:id`）
+```text
+✅ 先回答 bins/bizs/ents、svc/ctl/router/install 该怎么落
+✅ 先给最短分层路径，再按需补源码回溯入口
+✅ 需要实体/迁移/query/update/事务代码模板时，明确引导去用 kx-sea-orm
+✅ 只有实践层边界解释不清时，才回看框架源码目录
+```
 
-## 详细参考
+## 输出模板
 
-- **通用规范**（仓库结构、数据库连接/事务、常见问题）→ [AGENTS.md](references/AGENTS.md)
-- **ent 模块模板**（目录结构、实体文件、Cargo.toml）→ [ENT.md](references/ENT.md)
-- **biz 模块模板**（ctl/svc/dto/router/install）→ [BIZ.md](references/BIZ.md)
-- **高级功能**（feature 列表、历史表、VxeTable、完整方法列表）→ [ADVANCED.md](references/ADVANCED.md)
-- **openapi-scan 扫描规则**（扫描识别规则、build.rs 集成、公开路由配置）→ [OPENAPI-SCAN.md](references/OPENAPI-SCAN.md)
-- **项目模板**（创建新 kx-rs 项目的完整模板）→ [TEMPLATE.md](references/TEMPLATE.md)
+默认按这个结构输出：
+
+```text
+问题归类
+- 实践层问题 / 实践层 + 框架源码回溯
+
+推荐落点
+- 优先修改的目录、crate 或文件类型
+
+操作步骤
+- 最短落地顺序
+
+关键边界
+- 只补当前任务必须知道的 2~4 条分层规则
+
+源码回溯入口
+- 仅在需要回看框架源码时给出
+
+下一步
+- 一个具体起手动作
+```
+
+## 完整示例
+
+**Input**
+
+```text
+我要在业务项目里新增一个用户管理模块，按 kx-rs 方式应该先建哪些目录和文件？
+```
+
+**Output**
+
+```text
+问题归类
+- 这是实践层模块落地问题。
+
+推荐落点
+- 先看 references/project-skeleton.md 和 references/crud-workflow.md。
+- 如果后续还要兼容 swagger/openapi，再补 references/openapi-scan.md。
+
+操作步骤
+- 先确定 ents/<ds> 放实体与迁移。
+- 再确定 bizs/<biz> 的 svc/ctl/router/install/dto。
+- 最后在 bins/<app> 做装配与入口接线。
+
+关键边界
+- ents/* 负责实体、迁移、索引。
+- bizs/* 负责业务服务、控制器、路由和安装。
+- bins/* 只负责装配和运行入口。
+- 如果你接下来要我补 SeaORM 模型/迁移/事务代码模板，直接切到 kx-sea-orm。
+
+下一步
+- 先把模块目录骨架列出来，再决定要先写 svc 还是先接 router。
+```
