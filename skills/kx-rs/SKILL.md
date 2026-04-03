@@ -23,7 +23,7 @@ description: |
 
 ### 适用
 
-- 新建实践层项目骨架
+- 新建实践层项目骨架（若是“从零创建新项目”，优先交给 `kx-project-init`）
 - 编写 `bizs/`、`bins/` 的模块组织、装配与路由
 - 规划 `svc/ctl/router/install/dto` 的职责边界
 - 调整 ctl / router / handler 以兼容 `openapi-scan`
@@ -37,6 +37,8 @@ description: |
   - 交给 `systematic-debugging`
 - 仍在讨论产品方案、任务拆分、重构计划
   - 交给 `brainstorming` 或 `writing-plans`
+- 明确要从零创建新的 kx-rs 项目，并初始化 AGENTS / .agents / long-term-memory
+  - 交给 `kx-project-init`
 - 明确要的是 SeaORM / `#[derive(Sea)]` 六段式示例（模型、迁移、CRUD、事务、多数据源、多表）
   - 交给 `kx-sea-orm`
 - 明确要的是 `get/sel/qry/m/update_set/auto_migrate` 这类实体/迁移模板

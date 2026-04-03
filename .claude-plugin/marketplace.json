@@ -15,6 +15,16 @@
       ]
     },
     {
+      "name": "kx-project-init",
+      "description": "创建新的 kx-rs 框架项目脚手架",
+      "version": "1.2.0",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/kx-project-init"
+      ]
+    },
+    {
       "name": "kx-rs",
       "description": "kx-rs 实践层开发与分层落地规范",
       "version": "1.1.0",

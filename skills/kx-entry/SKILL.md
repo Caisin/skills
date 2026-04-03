@@ -6,7 +6,7 @@ description: |
   触发场景：
   - 用户在问“这事该改哪里 / 放哪里 / 从哪开始”
   - 需要区分 core/crates/derives/sdks/tools 与 bins/bizs/ents
-  - 需要判断应交给 kx-rs、kx-sea-orm、kx-axum-web、kx-sdk、kx-sdk-aigc，还是继续仓库级分析
+  - 需要判断应交给 kx-project-init、kx-rs、kx-sea-orm、kx-axum-web、kx-sdk、kx-sdk-aigc，还是继续仓库级分析
 
   触发词：放哪里、改哪里、从哪开始、哪个目录、哪个模块、哪个 skill、sdks 还是 crates、框架层、实践层
 ---
@@ -34,6 +34,7 @@ description: |
 | “这段代码该放哪” | 是框架层还是实践层 | 给目录 + 理由 |
 | “该用哪个 skill” | 是否已有专用 skill 覆盖 | 明确 handoff |
 | “sdks 还是 crates” | 是第三方接入还是通用基础抽象 | 默认优先 `sdks/` |
+| “新 kx-rs 项目怎么创建” | 是否明确在做项目初始化/脚手架 | 切到 `kx-project-init` |
 | “ents/bizs/bins 怎么组织” | 是否在讨论下游业务项目 | 切到 `kx-rs` |
 | “SeaORM / derive(Sea) 示例怎么写” | 是否明确在要模型/迁移/CRUD/事务/多源/多表示例 | 切到 `kx-sea-orm` |
 | “kx-axum web 层怎么写” | 是否明确在问 ctl/router/install、extractor、R/AxumErr | 切到 `kx-axum-web` |
@@ -88,7 +89,16 @@ description: |
 
 优先交给 `systematic-debugging`。
 
-### 4. 实践层开发
+### 4. 新项目初始化
+
+当用户明确要创建新的 kx-rs 项目时，优先切到仓库内 `kx-project-init`：
+
+- 初始化单工程 / 单 crate 项目
+- 初始化多 crate 项目骨架
+- 初始化 `AGENTS.md` 与 `docs/long-term-memory.md`
+- 初始化 `.agents` 子模块
+
+### 5. 实践层开发
 
 当用户在问这些内容时，优先切到仓库内 `kx-rs`：
 
@@ -97,7 +107,7 @@ description: |
 - CRUD 落地
 - openapi-scan 与业务控制器兼容
 
-### 5. SeaORM / #[derive(Sea)] 示例专门问题
+### 6. SeaORM / #[derive(Sea)] 示例专门问题
 
 当用户明确要的是这些内容时，优先切到仓库内 `kx-sea-orm`：
 
@@ -108,7 +118,7 @@ description: |
 - 多数据源示例
 - 多表操作示例，且明确禁止使用 relation 做外键
 
-### 6. `kx-axum` web 层问题
+### 7. `kx-axum` web 层问题
 
 当用户明确要的是这些内容时，优先切到仓库内 `kx-axum-web`：
 
@@ -119,11 +129,11 @@ description: |
 - 基于 `*Qry` / `*ModifyModel` 的 page/list/save/get/del 接口
 - 是否适合 `crud_api!` 的判断
 
-### 7. 一般 `sdks/` 开发
+### 8. 一般 `sdks/` 开发
 
 当用户在问第三方平台接入、trait 组织、token/cache、请求 DTO、SDK 风格对齐时，优先切到仓库内 `kx-sdk`。
 
-### 8. `sdks/aigc` 专门问题
+### 9. `sdks/aigc` 专门问题
 
 出现这些内容时，优先切到仓库内 `kx-sdk-aigc`：
 
