@@ -52,16 +52,30 @@ cargo run -- server
 - `docs/long-term-memory.md`：长期记忆文档
 ```
 
+## 更新 `.agents` 子模块
+
+```bash
+# 拉取主仓库后，初始化/更新子模块
+git submodule update --init --recursive
+
+# 将 .agents 更新到远程最新提交
+git submodule update --remote .agents
+
+# 如果需要同步所有子模块
+git submodule update --remote --recursive
+```
+
+
 ## 常见错误
 
 ```text
-❌ README 只写一句话，没有 install / server 运行方法
-❌ 不说明配置与迁移入口
+❌ README 只写一句话，没有 install / server / `.agents` 更新方法
+❌ 不说明配置、迁移与子模块维护入口
 ```
 
 ## 正确做法
 
 ```text
-✅ README 至少包含配置、install、server、目录说明
-✅ 新项目模板默认就让使用者知道如何初始化数据库并启动
+✅ README 至少包含配置、install、server、目录说明、`.agents` 更新方法
+✅ 新项目模板默认就让使用者知道如何初始化数据库、更新子模块并启动
 ```

@@ -302,15 +302,15 @@ cargo run -- install
 ### 关键点
 
 ```text
-- README 至少要写“如何配置、如何运行、如何迁移”。
-- 新项目不应缺最基本的启动说明。
+- README 至少要写“如何配置、如何运行、如何迁移、如何更新 `.agents` 子模块”。
+- 新项目不应缺最基本的启动说明与子模块维护说明。
 ```
 
 ## 常见错误
 
 ```text
 ❌ 只初始化代码，不写 install.rs
-❌ README 里没有 install / server 运行方法，导致模板不可落地
+❌ README 里没有 install / server / `.agents` 更新方法，导致模板不可落地
 ❌ 小项目默认上重型多 crate 结构
 ```
 
