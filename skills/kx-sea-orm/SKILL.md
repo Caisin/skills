@@ -8,8 +8,9 @@ description: |
   - 需要解释 `qry()/sel()/m()/get()/auto_migrate()` 应该怎么配合使用
   - 需要示范不依赖 `belongs_to/has_many/find_with_related` 的手工外键与多表读写
   - 需要把 `derives/codegen/src/table/sea` 的生成能力翻译成可直接照抄的业务模板
+  - 需要明确数据库字段设计、软删除设计、主键与索引命名规范
 
-  触发词：SeaORM、derive(Sea)、模型定义、迁移、CRUD、事务、多数据源、多表、外键、relation、auto_migrate、qry、sel、ModifyModel
+  触发词：SeaORM、derive(Sea)、模型定义、迁移、CRUD、事务、多数据源、多表、外键、relation、auto_migrate、qry、sel、ModifyModel、字段设计、索引设计、主键设计、is_del
 ---
 
 # kx-sea-orm
@@ -29,6 +30,7 @@ description: |
 - 需要写 `SeaTrans` 单库或多库事务示例
 - 需要写多数据源联动示例
 - 需要写**不使用 relation** 的多表读写示例
+- 需要制定字段长度、类型、软删除、主键、索引命名等数据库设计规范
 
 ### 不适用
 
@@ -68,9 +70,19 @@ description: |
    - 分页默认补稳定排序；如果没有显式排序，优先 `desc_id()`。
 5. **迁移优先使用模型自带 `auto_migrate()` / `create_index()` 能力**
    - 这些能力来自 `derives/codegen/src/table/sea` 的生成代码，不需要每次手写 `MigrationTrait`。
-6. **多表读取优先两段式 / 显式查询**
+6. **字段命名尽量短而稳定**
+   - 不要把字段名设计得过长；例如优先 `uid`，不要默认写成 `user_id`。
+   - 同类缩写要在全项目保持一致，例如 `uid` / `app_id` / `dept_id` 这类约定字段。
+7. **主键默认不要用 UUID**
+   - 普通业务表优先使用递增整数主键（如 `i64`）。
+   - UUID 主键会带来索引膨胀、写入局部性差和管理不便，不应作为默认选择。
+8. **SQLite 兼容时不要用无符号整数**
+   - 数字字段统一优先 `i64` / `i32`，不要使用 `u64` / `u32` / `usize` 作为持久化字段类型。
+9. **JSON 字段直接使用 `Json` 类型**
+   - 需要存 JSON 时，字段类型优先 `Json`，不要退回 `String` 存原始 JSON 文本。
+10. **多表读取优先两段式 / 显式查询**
    - 先查主表，再批量查从表，然后在 service 层组装返回值。
-7. **涉及 `bins/` / `bizs/` / `ents/` 的目录表达时，要明确这是下游业务仓库约定**
+11. **涉及 `bins/` / `bizs/` / `ents/` 的目录表达时，要明确这是下游业务仓库约定**
    - 当前工作区本身没有 `bizs/` 或 `bins/`。
 
 ## 推荐回答顺序
@@ -114,7 +126,7 @@ description: |
 - 优先贴哪几段模板
 
 关键约定
-- 当前回答必须强调的 3~6 条规则
+- 当前回答必须强调的 3~8 条规则
 
 最小代码骨架
 - 可直接抄走的代码片段
