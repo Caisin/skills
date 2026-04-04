@@ -1,0 +1,29 @@
+{
+  "skill_name": "kx-biz-app",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我想在一个 app 项目里统一接登录、用户、资源、订单和礼物接口，不想每个模块自己挂，应该用什么？",
+      "expected_output": "应命中 kx-biz-app，并指向 `AppRouter::apis()`。",
+      "files": [
+        ".agents/skills/kx-biz-app/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "app 端初始化时除了 asset 还会联动 res、mktg、gift 吗？",
+      "expected_output": "应命中 kx-biz-app，并指出 `AppInstall::install()` 会联动这些模块。",
+      "files": [
+        ".agents/skills/kx-biz-app/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "我想给 auth 的 OAuth2 逻辑补细节。",
+      "expected_output": "不应停留在 kx-biz-app 聚合层，应 handoff 到 kx-biz-auth。",
+      "files": [
+        ".agents/skills/kx-biz-app/SKILL.md"
+      ]
+    }
+  ]
+}

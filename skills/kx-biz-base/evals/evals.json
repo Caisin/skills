@@ -1,0 +1,29 @@
+{
+  "skill_name": "kx-biz-base",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我想先把 base 数据源跑起来，再接一个 DS 管理接口，当前最短入口是什么？",
+      "expected_output": "应命中 kx-biz-base，并指向 `BaseInstall::migrate()` 与 `DsCtl::apis()`。",
+      "files": [
+        ".agents/skills/kx-biz-base/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "这个基础模块里有没有统一后台聚合 router 可以直接挂所有能力？",
+      "expected_output": "应命中 kx-biz-base，并明确说明当前 crate 没有独立 top-level router 聚合。",
+      "files": [
+        ".agents/skills/kx-biz-base/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "我想给 storage 文件上传补缓存签名逻辑。",
+      "expected_output": "不应停留在 kx-biz-base，应 handoff 到 kx-biz-storage。",
+      "files": [
+        ".agents/skills/kx-biz-base/SKILL.md"
+      ]
+    }
+  ]
+}

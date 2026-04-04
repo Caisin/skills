@@ -1,0 +1,29 @@
+{
+  "skill_name": "kx-biz-res",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我想在一个项目里同时接后台资源管理接口和 app 端资源/文档接口，有没有统一 crate 可以直接挂？",
+      "expected_output": "应命中 kx-biz-res，并说明可分别复用 `ResRouter::apis()` 与 `ResRouter::app_apis()`。",
+      "files": [
+        ".agents/skills/kx-biz-res/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "资源模块如果要接微信通知入口，最短应该看哪里？",
+      "expected_output": "应命中 kx-biz-res，并指向 `ResRouter::notify_apis()`。",
+      "files": [
+        ".agents/skills/kx-biz-res/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "我想给文件上传结果统一做 presign 和 id2url。",
+      "expected_output": "不应停留在 kx-biz-res，应 handoff 到 kx-biz-storage。",
+      "files": [
+        ".agents/skills/kx-biz-res/SKILL.md"
+      ]
+    }
+  ]
+}
