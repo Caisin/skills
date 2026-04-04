@@ -72,6 +72,75 @@ kx-biz-auth = { version = "0.1", registry = "hekx" }
 - 用户/角色/菜单/权限属于不同子域，回答时不要混成一个大而全说明。
 ```
 
+## 钉钉登录接入步骤
+
+### 1. 前端发起钉钉授权
+
+前端应跳转到 **钉钉登录实际路由地址**，而不是自己拼钉钉开放平台地址。
+
+示例：
+
+```ts
+/**
+ * 打开钉钉登录
+ */
+export async function openDingTalkLogin() {
+  const url = window.location.href;
+  const sp = url.split('?');
+  window.location.href = `${requestClient.getBaseUrl()}/auth/dt/login?redirect_url=${sp[0]}`;
+}
+```
+
+关键说明：
+
+```text
+- 如果只有默认钉钉应用，走 `/auth/dt/login`
+- 如果有多个钉钉应用可选，走带应用 id 的地址 `/auth/dt/login/{app_id}`
+- `redirect_url` 应传“登录成功后要跳回的源地址”
+```
+
+### 2. 服务端登录回调语义
+
+`kx-biz-auth` 内部已经提供钉钉登录回调处理：
+
+```text
+- 登录入口：`/auth/dt/login` 或 `/auth/dt/login/{app_id}`
+- 回调入口：`/auth/dt/callback/{app_id}`
+- 回调成功后，会把登录结果追加到最初请求时传入的 `redirect_url`
+- 未绑定场景下，会把 `access_token` 等登录信息带回源地址
+```
+
+### 3. 前端源地址处理回跳结果
+
+登录回调跳回源地址后，前端要主动监听 URI 中是否存在登录信息，并完成本地登录态构建。
+
+示例：
+
+```ts
+// vue项目示例,在app.vue添加这个代码,然后将登陆信息存入
+// 其他项目需要根据具体项目的框架和使用具体分析,这个代码只是给个原理性操作
+// 钉钉登录跳转
+onMounted(() => {
+  const url = window.location.href;
+  const sp = url.split('?');
+  const qry = qs.parse(sp[1] || {});
+  if (qry?.access_token) {
+    const accessStore = useAccessStore();
+    accessStore.setAccessToken(qry?.access_token as string);
+    const router = useRouter();
+    router.push(preferences.app.defaultHomePath);
+  }
+});
+```
+
+关键说明：
+
+```text
+- 回跳后的源地址必须能读取 query 中的 `access_token`
+- 读取成功后要立刻落本地登录态，再跳转到业务首页或目标页
+- 具体监听位置随前端框架变化，但原理都是“页面初始化时检查 URI 是否带登录结果”
+```
+
 ## 常见错误 vs 正确做法
 
 ### 常见错误
@@ -80,6 +149,8 @@ kx-biz-auth = { version = "0.1", registry = "hekx" }
 ❌ 只接了用户登录接口，却忘了统一 auth router 里还有权限和系统管理子域。
 ❌ 只迁移了 auth 数据源，漏掉日志表。
 ❌ 把参数、SDK 或资源类问题混进 auth skill。
+❌ 前端直接拼钉钉开放平台地址，而不是走 `kx-biz-auth` 提供的登录路由。
+❌ 登录回调后没有在源地址监听页面参数，导致已经回跳却没建立本地登录态。
 ```
 
 ### 正确做法
@@ -88,6 +159,8 @@ kx-biz-auth = { version = "0.1", registry = "hekx" }
 ✅ 优先复用 `AuthRouter::apis()` 与 `AuthInstall::migrate()`。
 ✅ 按 app/social/per/system/user 子域拆回答案。
 ✅ 涉及参数或 SDK 时分别 handoff 到 kx-biz-param 或 sdk-mgr。
+✅ 钉钉登录优先走 `/auth/dt/login` 或 `/auth/dt/login/{app_id}`，并传 `redirect_url`
+✅ 前端在回跳源地址统一处理 `access_token` 等登录结果
 ```
 
 ## 输出模板

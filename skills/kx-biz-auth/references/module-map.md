@@ -8,6 +8,8 @@
   - 迁移 `auth` 实体并在 `log` 数据源中创建 `OpLog`
 - `kx-biz-auth/src/router.rs`
   - 统一聚合 app、social、per、system、user 等认证路由
+- `kx-biz-auth/src/ctl/social/dd.rs`
+  - 钉钉登录入口、带 app_id 登录入口与回调入口
 - `kx-biz-auth/src/ctl/system/*`
   - 菜单、角色、用户后台接口
 - `kx-biz-auth/src/ctl/per/*`
@@ -23,6 +25,7 @@
 | --- | --- |
 | 业务项目接认证路由 | `AuthRouter::apis()` |
 | 初始化 auth 与 oplog | `AuthInstall::migrate()` |
+| 接入钉钉登录 | `src/ctl/social/dd.rs` + `/auth/dt/login` / `/auth/dt/login/{app_id}` / `/auth/dt/callback/{app_id}` |
 | 改角色/菜单/用户后台接口 | `src/ctl/system/*` + `src/svc/*` |
 | 改 OAuth2 / 社交登录 | `src/ctl/app/*` / `src/ctl/social/*` / `src/svc/login_svc.rs` |
 
@@ -32,6 +35,7 @@
 - 该 crate 同时涉及 `auth` 数据源和 `log` 数据源。
 - 对外统一入口是 `AuthRouter::apis()`。
 - 路由按 app / dt / user / per / system / api_per / tz 分域。
+- 钉钉登录现有路由已经区分默认应用登录、带 app_id 登录和回调处理。
 ```
 
 ## 常见错误
@@ -40,6 +44,7 @@
 ❌ 只接了用户登录接口，却忘了统一 auth router 里还有权限和系统管理子域。
 ❌ 只迁移了 auth 数据源，漏掉日志表。
 ❌ 把参数、SDK 或资源类问题混进 auth skill。
+❌ 忽略钉钉登录回调是“回跳源地址并附带登录结果”的模式
 ```
 
 ## 正确做法
@@ -48,4 +53,5 @@
 ✅ 优先复用 `AuthRouter::apis()` 与 `AuthInstall::migrate()`。
 ✅ 按 app/social/per/system/user 子域拆回答案。
 ✅ 涉及参数或 SDK 时分别 handoff 到 kx-biz-param 或 sdk-mgr。
+✅ 钉钉登录接入时，前端发起授权和源地址回调消费必须成对设计
 ```

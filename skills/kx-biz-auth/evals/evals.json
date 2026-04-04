@@ -24,6 +24,15 @@
       "files": [
         ".agents/skills/kx-biz-auth/SKILL.md"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "我想在前端接入钉钉登录，应该跳哪个 auth 路由、多个钉钉应用时怎么区分、回跳后又该怎么处理 access_token？",
+      "expected_output": "应命中 kx-biz-auth，并说明前端应跳 `/auth/dt/login` 或 `/auth/dt/login/{app_id}`，携带 `redirect_url`；登录成功后会回跳源地址并带上登录结果，前端需在源地址初始化阶段监听并保存 `access_token`。",
+      "files": [
+        ".agents/skills/kx-biz-auth/SKILL.md",
+        ".agents/skills/kx-biz-auth/references/patterns.md"
+      ]
     }
   ]
 }
