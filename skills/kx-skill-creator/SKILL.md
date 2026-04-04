@@ -58,6 +58,25 @@ description: |
 
 只有在“当前仓库中确实存在、并且需要告诉模型去核实事实来源”的场景下，才适合引用 repo 内相对路径；即便如此，也应优先说明**为什么这些文件重要**，而不是只堆路径。
 
+## crate 视角约定
+
+对于 `kx-biz-param` 这类**可被其他项目直接依赖和复用的 crate 型 skill**，默认遵守这条规则：
+
+```text
+✅ 优先使用 crate 名、依赖写法、对外入口（如 router/install）来描述 skill
+✅ 优先回答“其他项目怎么引入和复用它”
+❌ 不要把 skill 主叙事写成某个源码目录内部维护说明（例如只写某个 bizs/ 路径）
+```
+
+例如：
+
+```text
+❌ 这是 bizs/xxx 模块，去改 bizs/xxx/src/...
+✅ 这是 kx-xxx crate，其他项目可通过 Cargo.toml 引入，并复用它提供的统一入口
+```
+
+只有在讨论 crate 内部实现时，才继续下钻到 `src/ctl`、`src/svc`、`src/router` 等源码结构。
+
 ## 内置脚本
 
 本 skill 自带脚本：
@@ -102,6 +121,7 @@ python3 .agents/skills/kx-skill-creator/scripts/skill_tool.py validate
 ✅ 先用本 skill 的脚本生成骨架，再补充仓库特有内容
 ✅ 修改 repo-local skill 后，统一运行 validate
 ✅ 把“通用 skill 设计方法”与“当前仓库本地约定”分开处理
+✅ 如果 skill 面向的是可复用 crate，默认使用 crate 视角来写 description、示例与接入方式
 ```
 
 ## 输出模板
@@ -128,5 +148,6 @@ python3 .agents/skills/kx-skill-creator/scripts/skill_tool.py validate
 - 先说明这是 repo-local skill 维护场景，应使用 kx-skill-creator。
 - 推荐直接运行 skill_tool.py init <name> --kind practice。
 - 生成骨架后再补 SKILL.md、references、evals 的仓库特定内容。
+- 如果这是类似 kx-biz-param 的可复用 crate skill，正文应优先写 crate 名、依赖方式和对外入口，而不是只写源码目录。
 - 最后运行 validate。
 ```

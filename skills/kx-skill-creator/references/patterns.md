@@ -45,6 +45,26 @@ python3 .agents/skills/kx-skill-creator/scripts/skill_tool.py validate
 ✅ 先选对 --kind，再补仓库真实内容
 ✅ 提交前统一跑 validate
 ✅ 新增或调整 skill 规范时，同步更新 AGENTS.md 与相关 repo-local skills
+✅ 如果 skill 面向的是可复用 crate，默认使用 crate 视角：先写 crate 名、依赖方式、对外入口，再写源码结构
+```
+
+## crate 视角补充规则
+
+适用于 `kx-biz-param` 这类“其他项目会直接 Cargo 引入”的 skill：
+
+```text
+✅ 推荐写法：这是 kx-xxx crate，可通过 Cargo.toml 引入，并复用它的 router/install/service 能力
+❌ 不推荐写法：这是某个 bizs/xxx 目录，先去改这个目录
+```
+
+推荐优先覆盖：
+
+```text
+1. crate 名
+2. Cargo.toml 依赖写法
+3. 对外统一入口（如 ParamRouter::apis() / ParamInstall::migrate()）
+4. 下游项目最小接入模板
+5. 只有需要维护内部实现时，才补 src/* 导航
 ```
 
 ## 路径引用规则
