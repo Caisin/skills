@@ -1,0 +1,22 @@
+{
+  "skill_name": "rust-cross-compile",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我在 M4 Mac 上要给 Linux x86_64 和 Windows x86_64 出包，准备用 cargo-zigbuild，怎么选 target，怎么避免目标机 glibc 不兼容？",
+      "expected_output": "应命中 rust-cross-compile，先给出 cargo-zigbuild 与 rustup target add 的最小准备，再说明 Linux 目标要根据 glibc 版本选 triple，Windows 可用 x86_64-pc-windows-gnu，最后补充最小验证链路与常见坑。",
+      "files": [
+        ".agents/skills/rust-cross-compile/SKILL.md",
+        ".agents/skills/rust-cross-compile/references/patterns.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我只是想修一个普通 Rust trait bound 报错，和目标平台、zigbuild、glibc 都没关系。",
+      "expected_output": "不应误留在 rust-cross-compile 内展开，应明确说明这不是交叉编译问题，应切到通用 Rust / debugging 方向处理。",
+      "files": [
+        ".agents/skills/rust-cross-compile/SKILL.md"
+      ]
+    }
+  ]
+}

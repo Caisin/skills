@@ -1,0 +1,33 @@
+{
+  "skill_name": "svc-mgr",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我想在 Rust 项目里把一个程序安装成 systemd 服务，但开发机是 macOS，还希望先把命令生出来给远端 Linux 执行，应该怎么做？",
+      "expected_output": "应命中 svc-mgr，优先说明使用 TypedServiceManager::target(ServiceManagerKind::Systemd) 而不是 native()，并强调 install() 返回 ServiceAction，可先 commands() 审查再给远端执行，必要时再用 parse(CmdOutput) 解析结果。",
+      "files": [
+        ".agents/skills/svc-mgr/SKILL.md",
+        ".agents/skills/svc-mgr/references/patterns.md",
+        ".agents/skills/svc-mgr/references/api.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "rsvc 里能不能直接把 contents 原始模板、enable/disable 和 reset_after_secs 这些都配出来？",
+      "expected_output": "应命中 svc-mgr，并明确区分库 API 与 CLI 边界：说明 trait/API 能力大于 rsvc 当前暴露能力，contents、enable/disable、reset_after_secs 这类需求优先直接使用库 API，而不是假设 CLI 全覆盖。",
+      "files": [
+        ".agents/skills/svc-mgr/SKILL.md",
+        ".agents/skills/svc-mgr/references/api.md",
+        ".agents/skills/svc-mgr/references/cli-and-platforms.md"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "我只想做一个 ratatui 终端交互界面，处理 tab、列表刷新和键盘事件，这个该改哪里？",
+      "expected_output": "不应继续停留在 svc-mgr 主技能里展开服务管理抽象，应明确这已经偏向 rtui / TUI 交互实现，并建议切到对应的 rtui 能力或实现模块。",
+      "files": [
+        ".agents/skills/svc-mgr/SKILL.md"
+      ]
+    }
+  ]
+}
