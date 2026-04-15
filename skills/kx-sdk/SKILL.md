@@ -17,6 +17,8 @@ description: |
 `kx-sdk` 是 `sdks/` 目录下第三方接入 / SDK 开发专用 skill。
 目标是让新增或维护的 SDK 与当前仓库既有模式保持一致，而不是每个 provider 都长成一套新风格。
 
+如果任务已经明确落在 `sdks/google`，尤其涉及 `GoogleOuath2Sdk`、`GoogleSdk`、OAuth2 scope、YouTube / AdMob / Android Publisher / Firebase，请优先切到 `google-sdk`。
+
 如果任务已经明确落在 `sdks/aigc`，尤其涉及 `AigcAuth`、`AigcSdk`、平台级单 API trait、流式能力或 proxy，请优先切到 `kx-sdk-aigc`。
 
 ## 适用边界
@@ -38,6 +40,8 @@ description: |
   - 交给 `kx-rs`
 - 明确的 `sdks/aigc` provider / proxy / stream 设计
   - 交给 `kx-sdk-aigc`
+- 明确的 `sdks/google` OAuth2 / service account / YouTube / AdMob / Android Publisher / Firebase 问题
+  - 交给 `google-sdk`
 
 ## Reference Selection
 
@@ -45,6 +49,8 @@ description: |
 
 - 普通 `sdks/<provider>` 接口扩展
   - 读 `references/patterns.md`
+- 如果问题已经明确进入 `sdks/google`
+  - 立即 handoff 到 `google-sdk`
 - 判断 `sdks/` 与 `crates/` 边界
   - 先读 `references/patterns.md`，再结合当前仓库实际目录判断
 - 如果问题已经明确进入 `sdks/aigc`

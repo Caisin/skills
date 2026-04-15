@@ -6,7 +6,7 @@ description: |
   触发场景：
   - 用户在问“这事该改哪里 / 放哪里 / 从哪开始”
   - 需要区分 core/crates/derives/sdks/tools 与 bins/bizs/ents
-  - 需要判断应交给 kx-project-init、kx-rs、kx-sea-orm、kx-axum-web、kx-sdk、kx-sdk-aigc，还是继续仓库级分析
+  - 需要判断应交给 kx-project-init、kx-rs、kx-sea-orm、kx-axum-web、kx-sdk、google-sdk、kx-sdk-aigc，还是继续仓库级分析
 
   触发词：放哪里、改哪里、从哪开始、哪个目录、哪个模块、哪个 skill、sdks 还是 crates、框架层、实践层
 ---
@@ -38,6 +38,7 @@ description: |
 | “ents/bizs/bins 怎么组织” | 是否在讨论下游业务项目 | 切到 `kx-rs` |
 | “SeaORM / derive(Sea) 示例怎么写” | 是否明确在要模型/迁移/CRUD/事务/多源/多表示例 | 切到 `kx-sea-orm` |
 | “kx-axum web 层怎么写” | 是否明确在问 ctl/router/install、extractor、R/AxumErr | 切到 `kx-axum-web` |
+| “GoogleOuath2Sdk / YouTube / AdMob / Firebase 怎么改” | 是否明确落在 `sdks/google` | 切到 `google-sdk` |
 | “AigcSdk / proxy / observe 怎么改” | 是否明确落在 `sdks/aigc` | 切到 `kx-sdk-aigc` |
 | “trait bound / lifetime / Send” | 是否纯 Rust 语言问题 | 切到 `rust-router` |
 
@@ -145,6 +146,16 @@ description: |
 - `proxy/observe`
 - 链路字段，如 `attempt_no`、`provider_hint`、`request_id`
 
+### 10. `sdks/google` 专门问题
+
+出现这些内容时，优先切到仓库内 `google-sdk`：
+
+- `GoogleOuath2Sdk` / `GoogleSdk`
+- OAuth2 client / service account
+- scope / access token / refresh token
+- YouTube / AdMob / Android Publisher / Firebase
+- `sdks/google/src/client_sdk.rs`、`src/youtube/`、`src/admob/`、`src/androidpublisher/`、`src/firebase/`
+
 ## 常见错误 vs 正确做法
 
 ### 常见错误
@@ -154,6 +165,7 @@ description: |
 ❌ 用户只是问“该放哪里”，却直接开始写实现代码
 ❌ 把第三方平台接入默认塞到 crates/
 ❌ 明明已经命中 kx-sdk-aigc，还继续用通用 kx-sdk 含混处理
+❌ 明明已经命中 sdks/google 专门问题，还继续只用通用 kx-sdk
 ```
 
 ### 正确做法
@@ -163,6 +175,7 @@ description: |
 ✅ 先判“任务属于哪一层”，再给目录与后续 skill
 ✅ 第三方接入默认优先看 sdks/，只有纯通用基础能力才考虑 crates/
 ✅ 命中更专门的 skill 时，明确 handoff，不在入口 skill 里展开实现手册
+✅ 明确进入 sdks/google 后，优先切到 google-sdk，而不是停留在通用 kx-sdk
 ```
 
 ## 标准输出模板

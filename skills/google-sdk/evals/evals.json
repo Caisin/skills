@@ -1,0 +1,23 @@
+{
+  "skill_name": "google-sdk",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "请给 sdks/google 加一个 YouTube Data API 接口，并确认 GoogleOuath2Sdk 的多个 scope 应该怎么支持。",
+      "expected_output": "命中 google-sdk；先定位到 sdks/google/src/client_sdk.rs 与 src/youtube/，说明 OAuth2 多 scope 应在 SDK 内部收敛，接口落到 youtube 子模块，并给出最小验证路径。",
+      "files": [
+        ".agents/skills/google-sdk/SKILL.md",
+        ".agents/skills/google-sdk/references/patterns.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我要改 sdks/aigc 的 Gemini stream proxy 逻辑，顺便看下 request_id 怎么抽。",
+      "expected_output": "不要误用 google-sdk；应 handoff 到 kx-sdk-aigc，因为问题明确在 sdks/aigc / proxy / stream。",
+      "files": [
+        ".agents/skills/google-sdk/SKILL.md",
+        ".agents/skills/kx-sdk-aigc/SKILL.md"
+      ]
+    }
+  ]
+}
