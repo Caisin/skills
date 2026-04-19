@@ -24,9 +24,9 @@ description: |
 ### 适用
 
 - `GoogleOAuth2Sdk`、`GoogleSdk`、`GoogleOAuth2Token` 改动
-- `src/auth/` 下的 `scope.rs` / `info.rs` / token 相关改动
+- `src/auth/` 下的 `scope/` / `info.rs` / token 相关改动
 - `src/youtube/`、`src/admob/`、`src/androidpublisher/`、`src/firebase/` 下的 Google API 接口扩展
-- scope 组合、token store key、授权 URL、code2token / refresh_token 流程调整
+- scope 组合、token store key、授权 URL（含 state 透传）、code2token / refresh_token 流程调整
 - 判断某个 Google API 该走 OAuth2 用户态鉴权还是 service account
 
 ### 不适用
@@ -44,11 +44,11 @@ description: |
 
 - OAuth2 client / scope / refresh token
   - 先看 `sdks/google/src/client_sdk.rs`
-  - 再看 `sdks/google/src/auth/scope.rs`
+  - 再看 `sdks/google/src/auth/scope/`
   - 再读 `references/patterns.md`
 - service account token / `GoogleSdk`
   - 先看 `sdks/google/src/lib.rs`
-  - 再看 `sdks/google/src/auth/scope.rs`
+  - 再看 `sdks/google/src/auth/scope/`
   - 再读 `references/patterns.md`
 - YouTube Data API
   - 先看 `sdks/google/src/youtube/`
@@ -61,8 +61,8 @@ description: |
 
 | 需求 | 优先文件 / 目录 | 先确认什么 |
 | --- | --- | --- |
-| OAuth2 client 授权 URL / code2token / refresh token | `sdks/google/src/client_sdk.rs`、`src/auth/scope.rs` | 是否应走 `GoogleOAuth2Sdk`，以及 scope 是否需要多值 |
-| service account token / `scope_token()` | `sdks/google/src/lib.rs`、`src/auth/scope.rs` | 是否应走 `GoogleSdk` + `Scope` |
+| OAuth2 client 授权 URL / code2token / refresh token | `sdks/google/src/client_sdk.rs`、`src/auth/scope/` | 是否应走 `GoogleOAuth2Sdk`，以及 scope 是否需要多值 |
+| service account token / `scope_token()` | `sdks/google/src/lib.rs`、`src/auth/scope/` | 是否应走 `GoogleSdk` + `Scope` |
 | YouTube Data API | `sdks/google/src/youtube/` | 是否需要 OAuth2 用户态 scope |
 | AdMob | `sdks/google/src/admob/` | 是否复用 `GoogleOAuth2Token` |
 | Android Publisher | `sdks/google/src/androidpublisher/`、`src/purchases/` | 是否复用 service account token |
@@ -78,6 +78,8 @@ description: |
    - 授权 URL 里的 `scope` 应按 Google 文档使用空格分隔的多个 scope
    - 单 scope 构造入口要保留，避免破坏现有调用方
    - `sdks/google` 内部统一使用 `auth::scope::Scope` 命名，不再使用 `usage`
+   - 多 scope 聚合能力现在直接收敛在 `Scope` 上，优先复用 `Scope::from_scopes` / `add_scope`
+   - `state` 默认可自动生成；若业务需要透传回调状态，优先提供显式 `*_with_state(...)` 入口而不是让调用方自己拼 URL
 3. **OAuth2 token key 必须带用户维度**
    - token store key 不要直接拼长 scope 串
    - 应统一走短前缀 + hash
