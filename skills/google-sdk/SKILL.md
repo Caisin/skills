@@ -5,11 +5,11 @@ description: |
 
   触发场景：
   - 修改 `sdks/google/src/client_sdk.rs`、`src/auth/*`、`src/youtube/*`、`src/admob/*`、`src/androidpublisher/*`、`src/firebase/*`
-  - 需要判断某个 Google 能力该走 `GoogleOuath2Sdk` 还是 `GoogleSdk`
+  - 需要判断某个 Google 能力该走 `GoogleOAuth2Sdk` 还是 `GoogleSdk`
   - 需要补 scope、access token / refresh token、service account token cache 或 Google API 子模块接口
   - 需要给 `sdks/google` 新增 YouTube / AdMob / Android Publisher / Firebase API trait、DTO 或请求样板
 
-  触发词：google sdk、kx-sdk-google、sdks/google、GoogleOuath2Sdk、GoogleSdk、OAuth2、scope、YouTube、AdMob、Android Publisher、Firebase
+  触发词：google sdk、kx-sdk-google、sdks/google、GoogleOAuth2Sdk、GoogleSdk、OAuth2、scope、YouTube、AdMob、Android Publisher、Firebase
 ---
 
 # Google SDK
@@ -23,8 +23,8 @@ description: |
 
 ### 适用
 
-- `GoogleOuath2Sdk`、`GoogleSdk`、`GoogleOuath2Token` 改动
-- `src/auth/` 下的 client / usage / token 相关改动
+- `GoogleOAuth2Sdk`、`GoogleSdk`、`GoogleOAuth2Token` 改动
+- `src/auth/` 下的 `scope.rs` / `info.rs` / token 相关改动
 - `src/youtube/`、`src/admob/`、`src/androidpublisher/`、`src/firebase/` 下的 Google API 接口扩展
 - scope 组合、token store key、授权 URL、code2token / refresh_token 流程调整
 - 判断某个 Google API 该走 OAuth2 用户态鉴权还是 service account
@@ -44,9 +44,11 @@ description: |
 
 - OAuth2 client / scope / refresh token
   - 先看 `sdks/google/src/client_sdk.rs`
+  - 再看 `sdks/google/src/auth/scope.rs`
   - 再读 `references/patterns.md`
 - service account token / `GoogleSdk`
   - 先看 `sdks/google/src/lib.rs`
+  - 再看 `sdks/google/src/auth/scope.rs`
   - 再读 `references/patterns.md`
 - YouTube Data API
   - 先看 `sdks/google/src/youtube/`
@@ -59,21 +61,23 @@ description: |
 
 | 需求 | 优先文件 / 目录 | 先确认什么 |
 | --- | --- | --- |
-| OAuth2 client 授权 URL / code2token / refresh token | `sdks/google/src/client_sdk.rs` | 是否应走 `GoogleOuath2Sdk`，以及 scope 是否需要多值 |
-| service account token | `sdks/google/src/lib.rs`、`src/auth/` | 是否应走 `GoogleSdk` + `Usage` |
+| OAuth2 client 授权 URL / code2token / refresh token | `sdks/google/src/client_sdk.rs`、`src/auth/scope.rs` | 是否应走 `GoogleOAuth2Sdk`，以及 scope 是否需要多值 |
+| service account token / `scope_token()` | `sdks/google/src/lib.rs`、`src/auth/scope.rs` | 是否应走 `GoogleSdk` + `Scope` |
 | YouTube Data API | `sdks/google/src/youtube/` | 是否需要 OAuth2 用户态 scope |
-| AdMob | `sdks/google/src/admob/` | 是否复用 `GoogleOuath2Token` |
+| AdMob | `sdks/google/src/admob/` | 是否复用 `GoogleOAuth2Token` |
 | Android Publisher | `sdks/google/src/androidpublisher/`、`src/purchases/` | 是否复用 service account token |
 | Firebase | `sdks/google/src/firebase/` | 是否复用 service account token |
 
 ## 核心规则
 
 1. **先分清鉴权宿主**
-   - 用户态 OAuth2 走 `GoogleOuath2Sdk`
+   - 用户态 OAuth2 走 `GoogleOAuth2Sdk`
    - 服务账号走 `GoogleSdk`
+   - 当前不要把两者合并成一个大而全宿主；优先保持两条鉴权链路分离、按场景选择入口
 2. **OAuth2 scope 默认要支持多值**
    - 授权 URL 里的 `scope` 应按 Google 文档使用空格分隔的多个 scope
    - 单 scope 构造入口要保留，避免破坏现有调用方
+   - `sdks/google` 内部统一使用 `auth::scope::Scope` 命名，不再使用 `usage`
 3. **OAuth2 token key 必须带用户维度**
    - token store key 不要直接拼长 scope 串
    - 应统一走短前缀 + hash
@@ -99,18 +103,20 @@ description: |
 ❌ 所有 Google API 都混到一个大文件里处理
 ❌ OAuth2 只支持单 scope，把 Google 的多 scope 约束留给调用方自己拼字符串
 ❌ token key 只按 client + scope 区分，导致不同用户共用一组 refresh/access token key
-❌ 明明应该用 GoogleOuath2Sdk，却错误走 service account
+❌ 明明应该用 GoogleOAuth2Sdk，却错误走 service account
+❌ 把 `GoogleOAuth2Sdk` 和 `GoogleSdk` 强行合成一个宿主，导致构造参数、token 流程和调用语义都混在一起
 ❌ 每个接口都手写 bearer_auth / to_ret 样板
 ```
 
 ### 正确做法
 
 ```text
-✅ 先判定走 GoogleOuath2Sdk 还是 GoogleSdk
+✅ 先判定走 GoogleOAuth2Sdk 还是 GoogleSdk
 ✅ scope 在 SDK 内部做收敛与校验，支持多 scope 组合
+✅ 对 Google 权限枚举统一使用 `auth::scope::Scope`
 ✅ 多用户场景下显式设置 user_key，让 token key 具备用户隔离能力
 ✅ 子模块按 YouTube / AdMob / Android Publisher / Firebase 拆分
-✅ trait 默认实现优先复用 GetClient / GoogleOuath2Token / ToRet
+✅ trait 默认实现优先复用 GetClient / GoogleOAuth2Token / ToRet
 ```
 
 ## 输出模板
@@ -144,7 +150,7 @@ description: |
 
 ```text
 - 先确认这是 sdks/google 专门问题，应使用 google-sdk。
-- 先判断 videos.list 走 GoogleOuath2Sdk，而不是 service account。
+- 先判断 videos.list 走 GoogleOAuth2Sdk，而不是 service account。
 - scope 组合逻辑优先下沉到 client_sdk.rs，而不是让调用方手工拼接字符串。
 - YouTube 接口落到 src/youtube/，请求/响应贴近 trait 放置。
 - 最后先跑相关单测，再跑 cargo check -p kx-sdk-google。
