@@ -1,0 +1,22 @@
+{
+  "skill_name": "karpathy-guidelines",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "给 crates/image 补一个最小便捷入口，不要改旧行为，也不要顺手重构，按 karpathy-guidelines 来做。",
+      "expected_output": "明确成功标准、强调最小改动与复用现有能力，并先补测试或验证步骤。",
+      "files": [
+        ".agents/skills/karpathy-guidelines/SKILL.md",
+        ".agents/skills/karpathy-guidelines/references/patterns.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "我要重做整个项目架构，顺便统一所有模块抽象，也请使用 karpathy-guidelines。",
+      "expected_output": "指出 karpathy-guidelines 只负责最小实现行为约束；如果要大范围架构设计，应先切到 brainstorming 或 writing-plans，而不是直接编码。",
+      "files": [
+        ".agents/skills/karpathy-guidelines/SKILL.md"
+      ]
+    }
+  ]
+}
