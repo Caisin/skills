@@ -1,110 +1,67 @@
 ---
 name: karpathy-guidelines
-description: |
-  Use when 在当前仓库中写代码、review 代码、做小范围重构或实现需求时，需要强制遵守“先想清楚、保持最小改动、用可验证目标驱动实现”的行为约束，避免过度设计和无关修改。
-
-  触发场景：
-  - 要在现有代码上做小步实现、修 bug、补测试或补一个便捷入口
-  - 需要明确“只改必要代码，不顺手重构周边”
-  - 需要先定义成功标准，再循环验证直到通过
-  - 需要提醒 agent 不要擅自扩 scope、加抽象、加依赖
-
-  触发词：karpathy-guidelines、最小改动、最小实现、不要过度设计、surgical changes、goal-driven、先想清楚、只改必要代码
+description: Behavioral guidelines to reduce common LLM coding mistakes. Use when writing, reviewing, or refactoring code to avoid overcomplication, make surgical changes, surface assumptions, and define verifiable success criteria.
 license: MIT
 ---
 
-# karpathy-guidelines
+# Karpathy Guidelines
 
-`karpathy-guidelines` 是当前仓库里用于约束编码行为的轻量 skill。
-它不是语言/框架专用实现手册，而是一个在落代码前后都应持续生效的行为准则：**先明确目标，再用最小、可验证的改动完成任务**。
+Behavioral guidelines to reduce common LLM coding mistakes, derived from [Andrej Karpathy's observations](https://x.com/karpathy/status/2015883857489522876) on LLM coding pitfalls.
 
-如果仓库协作约束或常用验证方式发生变化，必须同步更新本 skill、`AGENTS.md` 与相关 repo-local skills。
+**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
-## 适用边界
+## 1. Think Before Coding
 
-### 适用
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
 
-- 需要在已有模块上补一个最小新能力
-- 需要修复 bug、补回归测试或增加便捷 API
-- 需要控制 diff，只修改和当前需求直接相关的代码
-- 需要在实现前先定义成功标准与验证命令
+Before implementing:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
 
-### 不适用
+## 2. Simplicity First
 
-- 需要做大型架构设计、产品方案拆分
-  - 先交给 `brainstorming` / `writing-plans`
-- 需要处理纯 Rust 编译器语义问题（所有权、生命周期、Send/Sync）
-  - 交给 `rust-router`
-- 需要专门维护 repo-local skill 结构本身
-  - 优先交给 `kx-skill-creator`
+**Minimum code that solves the problem. Nothing speculative.**
 
-## 核心规则
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
 
-1. **先想清楚再落代码**
-   - 先写出成功标准
-   - 有歧义时明确指出，不要悄悄拍脑袋选一种
-2. **只写必要代码**
-   - 不加用户没要的抽象、配置、兜底功能
-   - 不把一次小需求扩成通用平台
-3. **只动必要文件**
-   - 不顺手重构旁边代码
-   - 不清理与本次任务无关的旧问题
-4. **先用测试或验证命令锁定目标**
-   - 能先写失败测试就先写
-   - 至少补一个能证明行为的验证步骤
-5. **证据优先于口头断言**
-   - 报告完成时要带命令和结果
-   - 测试没跑过就不要说“已完成”
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
-## 常见错误 vs 正确做法
+## 3. Surgical Changes
 
-### 常见错误
+**Touch only what you must. Clean up only your own mess.**
 
-```text
-❌ 只是加一个小入口，却顺手改了多处无关命名和结构
-❌ 用户只要最小功能，却先抽象出一层 builder / manager / facade
-❌ 测试都没跑就说“应该可以”
-❌ 明明是局部修复，却引入新依赖或大范围重构
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
 ```
 
-### 正确做法
-
-```text
-✅ 先说清成功标准：要新增什么入口、验证什么行为
-✅ 先补失败测试或最小回归验证，再补实现
-✅ 只改命中的函数、模块与导出
-✅ 最终汇报里明确列出验证命令和通过结果
-```
-
-## 推荐输出模板
-
-```text
-成功标准
-- 这次要新增/修复什么
-- 用什么命令或测试证明它成立
-
-最小实现策略
-- 复用什么现有能力
-- 明确不做什么
-
-验证
-- 运行的命令
-- 结果
-```
-
-## 完整示例
-
-**Input**
-
-```text
-给 kx-image 增加一个从视频直接生成透明斜水印图的便捷入口，但不要改旧 API 行为。
-```
-
-**Output direction**
-
-```text
-- 先定义成功标准：新增一个便捷入口，旧 add_watermark 行为不变，并补测试验证。
-- 复用现有 video 宽高读取与 slanted watermark 渲染能力，不重复实现文字渲染。
-- 先写失败测试，再补最小实现。
-- 最后跑目标测试并用结果证明完成。
-```
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
