@@ -1,0 +1,22 @@
+{
+  "skill_name": "karpathy-guidelines",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我修这个 Rust 函数的边界 bug，要求最小改动，不要顺手重构。",
+      "expected_output": "应使用 karpathy-guidelines：先明确最小修复和验证目标，只修改直接相关代码，避免无关重构，并报告验证证据。",
+      "files": [
+        "SKILL.md",
+        "references/patterns.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "解释一下这个概念，不需要改代码。",
+      "expected_output": "这是边界场景；不应强行进入代码改动流程，可只给概念说明，必要时轻量提醒假设边界。",
+      "files": [
+        "SKILL.md"
+      ]
+    }
+  ]
+}
