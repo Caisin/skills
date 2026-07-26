@@ -1,0 +1,17 @@
+{
+  "skill_name": "pr",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "根据当前 feature 分支和 main 的差异写 PR title/body。",
+      "expected_output": "应命中 pr，先读取 base...HEAD 完整 diff/log，再按 PR 模板说明净改动、真实验证、影响和 review 重点。",
+      "files": [".github/pull_request_template.md"]
+    },
+    {
+      "id": 2,
+      "prompt": "只给已暂存改动写一个 commit message。",
+      "expected_output": "应 handoff 到 commit，而不是编写 PR。",
+      "files": []
+    }
+  ]
+}

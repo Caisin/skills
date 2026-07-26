@@ -1,0 +1,17 @@
+{
+  "skill_name": "sync-docs",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "审计最近 20 个提交，把公共 API 和 feature 变化同步到文档。",
+      "expected_output": "应命中 sync-docs，先建立 commit 到 mdBook/rustdoc/README/长期记忆的映射，修正旧结论后运行对应验证。",
+      "files": ["docs/dev/README.md", "docs/long-term-memory.md"]
+    },
+    {
+      "id": 2,
+      "prompt": "修正 docs/src/index.md 的一个错别字。",
+      "expected_output": "不应扩大为历史扫描；这是 prose 或直接的小型文档修正。",
+      "files": []
+    }
+  ]
+}

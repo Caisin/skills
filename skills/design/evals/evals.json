@@ -1,0 +1,17 @@
+{
+  "skill_name": "design",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我要修改多数据源注册的发布顺序和 alias 重连语义，先写设计文档。",
+      "expected_output": "应命中 design，从 docs/dev/design/_template.md 创建文档，覆盖行为、数据一致性、兼容性、替代方案和验证计划。",
+      "files": ["docs/dev/design/_template.md"]
+    },
+    {
+      "id": 2,
+      "prompt": "README 有一个错别字，直接修正。",
+      "expected_output": "不应要求设计文档；这是 prose 或直接的小型文档修正。",
+      "files": []
+    }
+  ]
+}

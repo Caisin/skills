@@ -1,0 +1,17 @@
+{
+  "skill_name": "commit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "把当前已经验证的 kx-axum 修复提交掉，帮我写 commit message。",
+      "expected_output": "应命中 commit，先基于实际暂存 diff 和验证结果选择 fix(axum)，并按 docs/dev/COMMITS.md 生成准确的 Lore trailers。",
+      "files": ["docs/dev/COMMITS.md"]
+    },
+    {
+      "id": 2,
+      "prompt": "帮我写这个分支的 PR 描述，但不要提交。",
+      "expected_output": "不应停留在 commit skill，应 handoff 到 pr，并基于完整分支 diff 编写。",
+      "files": []
+    }
+  ]
+}

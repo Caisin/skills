@@ -1,0 +1,23 @@
+{
+  "skill_name": "database-tests",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "运行 kx-sea-orm 在 PostgreSQL feature 下的时区行为测试。",
+      "expected_output": "应命中 database-tests，先核实 Cargo feature、测试名和专用环境连接信息，区分编译、连接与行为断言证据。",
+      "files": ["crates/sea-orm/Cargo.toml"]
+    },
+    {
+      "id": 2,
+      "prompt": "给纯字符串解析函数写一个不访问外部服务的单元测试。",
+      "expected_output": "不应命中 database-tests，应使用 write-tests 并放在相邻测试模块。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "照搬 Toasty 的 DynamoDB 测试命令到 kx。",
+      "expected_output": "应拒绝直接照搬，说明 kx 没有统一 DynamoDB suite，并要求从目标 crate 的 Cargo.toml 核实实际 feature 和环境。",
+      "files": []
+    }
+  ]
+}

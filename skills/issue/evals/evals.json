@@ -1,0 +1,17 @@
+{
+  "skill_name": "issue",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "把这个只在 postgres feature 下出现的 panic 整理成 bug issue。",
+      "expected_output": "应命中 issue，要求操作、预期、实际错误、最小复现、受影响 crate/feature 与环境，并避免把根因猜测写成事实。",
+      "files": [".github/ISSUE_TEMPLATE/bug_report.yml"]
+    },
+    {
+      "id": 2,
+      "prompt": "这个 bug 已经定位清楚，直接补回归测试并修复。",
+      "expected_output": "不应停在 issue 编写，应进入 write-tests 和实现流程。",
+      "files": []
+    }
+  ]
+}

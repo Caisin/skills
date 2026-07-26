@@ -1,0 +1,17 @@
+{
+  "skill_name": "write-tests",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "给 QryCond 的字符串数字转换 bug 先补回归测试。",
+      "expected_output": "应命中 write-tests，在现有相邻测试模块中先写最小失败用例，聚焦可观察反序列化结果，再运行目标测试和目标 crate。",
+      "files": ["core/models/src/common/cond.rs"]
+    },
+    {
+      "id": 2,
+      "prompt": "运行现有的 PostgreSQL 集成测试，不修改测试代码。",
+      "expected_output": "应使用 database-tests 核实 feature 与环境，不需要 write-tests。",
+      "files": []
+    }
+  ]
+}

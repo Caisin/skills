@@ -1,0 +1,17 @@
+{
+  "skill_name": "prose",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "把这段 kx-sea-orm README 改得直接、具体，并保留中文。",
+      "expected_output": "应命中 prose，按 docs/dev/WRITING.md 使用当前事实、主动语态、具体 API 与边界，删除空泛评价。",
+      "files": ["docs/dev/WRITING.md"]
+    },
+    {
+      "id": 2,
+      "prompt": "实现一个新的 Google SDK 接口，不需要写文档。",
+      "expected_output": "不应只使用 prose，应 handoff 到 google-sdk/kx-sdk 实现流程；只有产生文档时再应用写作规则。",
+      "files": []
+    }
+  ]
+}
