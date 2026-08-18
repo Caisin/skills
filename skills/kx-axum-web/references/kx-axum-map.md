@@ -72,43 +72,43 @@ async fn page(
 
 对应文件：`crates/axum/src/core/query.rs`
 
-## 5. `framework/axum/ctl/curd_trait.rs`
+## 5. `layer/log.rs`
 
-这里定义了 `crud_api!` 宏，能为实体快速生成：
-
-```text
-- all()
-- page()
-- save()
-- get()
-- del()
-```
-
-宏里默认依赖：
+这里定义后端无关的操作日志边界：
 
 ```text
-- entc::Query
-- entc::ModifyModel
-- entc::Model
-- SeaOrms::get(CODE)
+- OperationLog：纯 HTTP 日志记录
+- OperationLogProcessor：异步处理接口
+- with_operation_log_processor()：为 Router 安装处理器
+- run_with_log_processor()：启动时传入处理方法
 ```
 
-这也是为什么它特别适合配合 kx-sea-orm 生成的 Query / ModifyModel 一起用。
+处理方法只接收 `OperationLog`，不接收数据库连接或实体：
 
-对应文件：`crates/axum/src/framework/axum/ctl/curd_trait.rs`
+```rust
+run_with_log_processor::<Claims, _>(app, |log: OperationLog| async move {
+    send_to_log_center(log).await
+}).await?;
+```
 
-## 6. `framework/axum/ctl/crud.rs`
+数据库、消息队列、文件和远端日志服务都由下游处理器选择，`kx-axum` 不依赖指定后端。
 
-这里是一个更通用的动态表 CRUD 路由样例，可帮助理解：
+对应文件：`crates/axum/src/layer/log.rs`
+
+## 6. `cfg/args.rs`
+
+这里提供启动后处理入口：
 
 ```text
-- kx-axum 里的路由、Json、Path、QsQuery 组合方式
-- 动态 page/list/save/update/del handler 怎么组织
+- AppArgs::init_args_with(post_process)
+- AppArgs::init_with_args_and(args, post_process)
 ```
 
-对应文件：`crates/axum/src/framework/axum/ctl/crud.rs`
+数据库连接、模型注册、alias 和迁移通过应用后处理装配，不进入 Web crate。
 
-## 7. `framework/axum/ext/api.rs`
+对应文件：`crates/axum/src/cfg/args.rs`
+
+## 7. `ext/api.rs`
 
 这里补了 Router introspection 能力：
 
@@ -119,7 +119,7 @@ async fn page(
 
 一般不是业务接口第一入口，但在需要理解 router 聚合结果时可以回看。
 
-对应文件：`crates/axum/src/framework/axum/ext/api.rs`
+对应文件：`crates/axum/src/ext/api.rs`
 
 ## 8. 这份 map 怎么用
 
@@ -127,7 +127,7 @@ async fn page(
 
 优先贴 `references/patterns.md`，不要先讲源码。
 
-### 当用户追问“R / AxumErr / QsQuery / crud_api! 是哪来的”
+### 当用户追问“R / AxumErr / QsQuery / OperationLog 是哪来的”
 
 再补这份 map，并指出对应源码文件。
 
@@ -138,8 +138,8 @@ async fn page(
 ## 常见错误
 
 ```text
-❌ 只会照抄业务侧代码，不知道 R / AxumErr / crud_api! 的来源
-❌ 以为 crud_api! 自己生成 Query/ModifyModel，而不是依赖实体 codegen
+❌ 继续引用已经删除的 crud_api! 或旧 framework 路径
+❌ 把日志处理器设计成只能接收某个 ORM 的连接或实体
 ❌ web 层问题和实体 codegen 问题混在一起，不区分 kx-axum 与 kx-sea-orm 的边界
 ```
 
@@ -148,5 +148,6 @@ async fn page(
 ```text
 ✅ 先用 patterns.md 回答 web 层模板，再用这份 map 解释 kx-axum 出口
 ✅ 需要解释 Query / ModifyModel 来源时，直接联动 kx-sea-orm 的 codegen-map
+✅ 日志处理方法只接收 OperationLog，持久化后端由应用选择
 ✅ 让 web 层 skill 只关心 handler/router/install，实体与迁移模板交给 kx-sea-orm
 ```

@@ -22,8 +22,8 @@
     },
     {
       "id": 3,
-      "prompt": "我想给 ents/param 新增一个 derive(Sea) 实体和 auto_migrate 模板，顺便补索引，帮我出模板。",
-      "expected_output": "不应停留在 kx-biz-param 内展开，应明确 handoff 到 kx-sea-orm，因为问题核心已经变成实体定义、迁移与 derive(Sea) 模板。",
+      "prompt": "我想给 ents/param 新增一个 SeaORM 2 dense entity 和 auto_migrate 模板，顺便补索引，帮我出模板。",
+      "expected_output": "不应停留在 kx-biz-param 内展开，应明确 handoff 到 kx-sea-orm，因为问题核心已经变成 #[sea_orm::model] + derive(Sea)、schema sync 与索引模板。",
       "files": [
         ".agents/skills/kx-biz-param/SKILL.md"
       ]

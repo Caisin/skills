@@ -29,7 +29,7 @@ pub async fn create_user_with_dept_check(name: String, mobile: String, dept_id: 
                     .set_is_del(false)
                     .set_created_at(now)
                     .set_updated_at(now);
-                Ok(m.save(c).await?)
+                m.upsert(c).await
             })
         })
         .await
@@ -53,7 +53,7 @@ pub async fn create_user_and_log(name: String, mobile: String, dept_id: i64, uid
                     .set_is_del(false)
                     .set_created_at(now)
                     .set_updated_at(now);
-                let saved = user.save(base).await?;
+                let saved = user.upsert(base).await?;
 
                 let mut op = OpLog::m();
                 op.set_uid(uid)
@@ -61,7 +61,7 @@ pub async fn create_user_and_log(name: String, mobile: String, dept_id: i64, uid
                     .set_method("POST".to_string())
                     .set_created_at(now)
                     .set_default();
-                op.save(log).await?;
+                op.upsert(log).await?;
                 let _ = saved;
                 Ok(())
             })
@@ -108,7 +108,8 @@ pub async fn page_users_with_dept<C: ConnectionTrait>(c: &C, paging: Paging) -> 
 - 事务边界集中放在 svc，不要散在 ctl/handler。
 - 先做手工外键校验，再落库。
 - 多表读优先两段式：主表 -> 收集 IDs -> 批量查从表 -> 内存组装。
-- 多表写和多库写都优先用 SeaTrans 收口。
+- 单库多表写可用 SeaTrans 收口并保持数据库事务原子性。
+- 多库写仅是按顺序提交的 best-effort 协调，不保证跨库原子性；业务必须设计补偿或幂等重试。
 - 不使用 relation 也不影响一致性；一致性由 service 顺序与事务保证。
 ```
 
@@ -119,13 +120,14 @@ pub async fn page_users_with_dept<C: ConnectionTrait>(c: &C, paging: Paging) -> 
 ❌ 多表读取只会 N+1 一条条查
 ❌ 事务逻辑散落在 ctl 和 svc 多处
 ❌ 明明是多库事务，却分散在多个函数里手动提交
+❌ 把 SeaTrans 的多库顺序提交当成分布式原子事务
 ```
 
 ## 正确做法
 
 ```text
 ✅ 多表读取优先批量 is_in + HashMap 组装
-✅ 多表写和多库写都用 SeaTrans 收口
+✅ 多表写和多库写可用 SeaTrans 收口，但明确多库仅为 best-effort
 ✅ 外键字段保持普通字段 + service 校验
 ✅ 一致性靠事务保证，不靠 relation 魔法
 ```

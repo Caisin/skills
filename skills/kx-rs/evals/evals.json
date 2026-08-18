@@ -15,8 +15,8 @@
     },
     {
       "id": 3,
-      "prompt": "业务侧用 #[derive(Sea)] 时，sel 和 qry 怎么选，save 为什么有时候会走 update？",
-      "expected_output": "归类为实践层 + 框架边界问题，优先使用 sea-usage reference，解释 sel/qry/save 选择规则，必要时再提示回看 derives/codegen。",
+      "prompt": "业务侧用 #[sea_orm::model] + #[derive(Sea)] 时，sel 和 qry 怎么选，upsert 与原生 save 有什么区别？",
+      "expected_output": "归类为实践层 + 框架边界问题，优先 handoff 到 kx-sea-orm，解释 sel/qry 选择规则以及 upsert 与 ActiveModelTrait::save 的语义边界，必要时再提示回看 derives/codegen。",
       "files": []
     },
     {

@@ -39,11 +39,11 @@ description: |
   - 交给 `brainstorming` 或 `writing-plans`
 - 明确要从零创建新的 kx-rs 项目，并初始化 AGENTS / .agents / long-term-memory
   - 交给 `kx-project-init`
-- 明确要的是 SeaORM / `#[derive(Sea)]` 六段式示例（模型、迁移、CRUD、事务、多数据源、多表）
+- 明确要的是 SeaORM / `#[sea_orm::model]` + `#[derive(Sea)]` 六段式示例（模型、迁移、CRUD、事务、多数据源、多表）
   - 交给 `kx-sea-orm`
-- 明确要的是 `get/sel/qry/m/update_set/auto_migrate` 这类实体/迁移模板
+- 明确要的是 `get/sel/qry/m/upsert/update_set/auto_migrate` 这类实体/迁移模板
   - 交给 `kx-sea-orm`
-- 明确要的是 `kx-axum` 的 ctl/router/install、extractor、`R<T>` / `AxumErr`、`crud_api!` 等 web 层模板
+- 明确要的是 `kx-axum` 的 ctl/router/install、extractor、`R<T>` / `AxumErr`、显式 CRUD handler 或后端无关日志处理器等 web 层模板
   - 交给 `kx-axum-web`
 - 纯 `sdks/` 第三方接入与 SDK 风格问题
   - 交给 `kx-sdk`

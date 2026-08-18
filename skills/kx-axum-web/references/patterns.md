@@ -19,7 +19,7 @@ Result<R<T>, AxumErr>
 4. `router.rs` 负责 `nest()` 路由聚合；`install.rs` 负责迁移或初始化。
 5. 默认先给单工程 / 单 crate 模板，只有大型工程再拆 `bins/* + bizs/* + ents/*`。
 6. `bins/*` 负责 server / install 子命令与 `kx_axum::run(...)` 启动；`build.rs` 生成 OpenAPI 是可选项。
-7. 如果只是简单 CRUD，可优先考虑 `crud_api!`。
+7. 简单 CRUD 也使用显式薄 handler；`crud_api!` 已移除。
 
 ---
 
@@ -93,8 +93,9 @@ use kx_sea_common::Sea;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Sea, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize, Default)]
-#[sea_orm(table_name = "user", comment = "用户表")]
+#[sea_orm::model]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize, Default)]
+#[sea_orm(table_name = "user", comment = "用户表", model_attrs(derive(Sea)))]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i64,
@@ -102,9 +103,6 @@ pub struct Model {
     pub created_at: i64,
     pub updated_at: i64,
 }
-
-#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
 ```
@@ -225,7 +223,7 @@ impl AdmFooCtl {
             req.set_created_at(now).set_default().unset_id();
         }
         req.set_updated_at(now);
-        req.save(c).await?;
+        req.upsert(c).await?;
         Ok(R::ok(()))
     }
 }
@@ -236,7 +234,7 @@ impl AdmFooCtl {
 ```text
 - FooQry / FooModify 是 kx-sea-orm 生成结构体，不建议手写一套重复分页保存 DTO。
 - page 接口默认补 has_order()/desc_id()。
-- save 接口默认补 created_at / updated_at / set_default / unset_id 语义。
+- save 接口默认补 created_at / updated_at / set_default / unset_id，并显式调用 upsert()。
 ```
 
 ---
@@ -536,6 +534,7 @@ skip_routes = [
 ```text
 - `main.rs` 负责 Server / Install 子命令切换。
 - 运行入口通常通过 `AppArgs::<SubCmd>::init_def_args()` 读取 cfg 与命令行。
+- `init_def_args()` 不连接数据库；需要数据库时改用 `init_args_with(...)` 传入应用初始化方法。
 - `kx_axum::run::<Claims>(app)` 负责真正启动服务。
 - 如果项目需要独立生成 OpenAPI，再额外补 `build.rs` 调用 `kx_openapi_scan::generate(None)`。
 - `cfg.toml` 一般至少包含 app/db_alias/jwt/security 等块。
@@ -543,44 +542,35 @@ skip_routes = [
 
 ---
 
-## 8. `crud_api!` 模板
+## 8. 操作日志处理方法模板
 
 ### 适用场景
 
-- 纯 page/get/save/del
-- 基本不加业务逻辑
+- 需要记录 HTTP 操作日志
+- 日志可能写数据库、消息队列、文件或远端日志中心
+- 不希望 Web crate 依赖指定后端
 
 ### 推荐模板
 
-这个模式可参考 `bizs/auth/src/ctl/system/user.rs`、`role.rs`、`permission.rs`：
-
 ```rust
-use kx_axum::{
-    axum::Router,
-    axum::routing::{delete, get, post},
-    crud_api,
-};
-use kx_ents_auth::entity::kx_role::{self, KxRole};
+use std::sync::Arc;
+use kx_axum::{OperationLog, run_with_log_processor};
 
-crud_api!(kx_role, RoleCtl, "auth");
-
-impl RoleCtl {
-    pub fn apis() -> Router {
-        Router::new()
-            .route("/", get(Self::page))
-            .route("/", post(Self::save))
-            .route("/{id}", get(Self::get))
-            .route("/{id}", delete(Self::del))
-    }
-}
+let log_client = Arc::new(log_client);
+run_with_log_processor::<Claims, _>(app, move |log: OperationLog| {
+    let log_client = Arc::clone(&log_client);
+    async move { log_client.write(log).await }
+})
+.await?;
 ```
 
 ### 关键点
 
 ```text
-- crud_api! 会自动生成 all/page/save/get/del。
-- 适合基础 CRUD，不适合复杂事务、多表写入、额外校验很多的接口。
-- openapi-scan 已对 crud_api! 做了额外识别处理。
+- OperationLog 是框架自有数据结构，不含 ORM 实体或数据库主键。
+- 处理方法返回 anyhow::Result<()>，框架异步调用，失败不会改变 HTTP 响应。
+- 下游负责持久化、重试、批量、脱敏和保留周期。
+- 同时需要 ingress 时使用 run_with_ingress_and_log_processor()。
 ```
 
 ---
@@ -588,8 +578,8 @@ impl RoleCtl {
 ## 常见错误
 
 ```text
-❌ 明明只是简单 CRUD，还手写一整套重复 handler
-❌ 明明有复杂事务，却还硬塞进 crud_api!
+❌ 继续使用已移除的 crud_api!
+❌ 把数据库连接或 ORM 实体放进 OperationLogProcessor 公共边界
 ❌ save/page 接口不接 *ModifyModel / *Qry，重复手写 web DTO
 ❌ ctl/ 里直接堆复杂事务和多表逻辑
 ❌ install.rs、router.rs、ctl/、bins/main.rs 职责混在一起
@@ -600,9 +590,10 @@ impl RoleCtl {
 ## 正确做法
 
 ```text
-✅ 简单 CRUD 优先评估 crud_api!
+✅ 简单 CRUD 使用显式薄 handler
 ✅ 标准 page/save/list 优先接 *Qry / *ModifyModel
 ✅ 复杂写入优先 ctl + svc + SeaTrans
+✅ 操作日志处理方法只接收 OperationLog，后端由下游选择
 ✅ router.rs 统一收口 nest()，install.rs 只做安装入口
 ✅ 小型工程优先用单工程 / 单 crate 模板
 ✅ bins/main.rs 只负责子命令分流、装配 app 与调用 kx_axum::run(...)

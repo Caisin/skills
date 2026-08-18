@@ -11,8 +11,13 @@
 ## 推荐模板
 
 ```rust
-#[derive(Clone, Sea, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize, Default)]
-#[sea_orm(table_name = "sys_user", comment = "用户表")]
+#[sea_orm::model]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize, Default)]
+#[sea_orm(
+    table_name = "sys_user",
+    comment = "用户表",
+    model_attrs(derive(Sea))
+)]
 pub struct Model {
     /// 主键：普通业务表优先 i64
     #[sea_orm(primary_key)]
@@ -32,10 +37,12 @@ pub struct Model {
     pub updated_at: i64,
     pub deleted_at: Option<i64>,
 }
+
+impl ActiveModelBehavior for ActiveModel {}
 ```
 
 ```rust
-pub async fn migrate<C: ConnectionTrait>(c: &C) -> Result<()> {
+pub async fn migrate<C: SchemaSyncConnection>(c: &C) -> Result<()> {
     SysUser::auto_migrate(c).await?;
 
     SysUser::create_index(
@@ -66,6 +73,7 @@ pub async fn migrate<C: ConnectionTrait>(c: &C) -> Result<()> {
 - `state` / `status` 不能替代 `is_del`；状态字段表达业务状态，`is_del` 只表达删除语义。
 - 避免直接使用 SQL / 数据库保留关键字作为字段名，例如：`order`、`group`、`key`、`index`、`table`、`select`、`from`、`desc`。
 - 每个表必须有主键。
+- 实体使用 `#[sea_orm::model]` + `model_attrs(derive(Sea))`；不要手写空 `Relation`。
 - 普通业务表优先单整数主键；只有在关系表、桥表、天然联合唯一键场景下，才考虑联合主键。
 - 单字段索引优先直接使用 `#[sea_orm(indexed)]`。
 - 联合索引名字不要太长，普通索引以 `idx_` 开头，唯一索引以 `udx_` 开头。

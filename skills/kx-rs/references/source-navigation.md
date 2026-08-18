@@ -6,7 +6,7 @@
 
 ## 快速对照表
 
-### 1. `#[derive(Sea)]` 生成了什么，为什么和预期不一样？
+### 1. `#[sea_orm::model]` + `#[derive(Sea)]` 生成了什么，为什么和预期不一样？
 
 - 回看目录
   - `derives/sea/`
@@ -14,7 +14,7 @@
 - 理由
   - 这里定义了宏入口、Alias 生成、Query/Modify/EntitySelect 等代码生成规则
 
-### 2. 为什么业务侧 `qry()` / `sel()` / `save()` 表现是这样？
+### 2. 为什么业务侧 `qry()` / `sel()` / `upsert()` 表现是这样？
 
 - 回看目录
   - `derives/codegen/`

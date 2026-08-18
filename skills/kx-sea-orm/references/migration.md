@@ -12,11 +12,11 @@
 
 ```rust
 use anyhow::Result;
-use sea_orm::ConnectionTrait;
+use kx_sea_common::SchemaSyncConnection;
 
 use super::{sys_dept::SysDept, sys_user::SysUser};
 
-pub async fn migrate<C: ConnectionTrait>(c: &C) -> Result<()> {
+pub async fn migrate<C: SchemaSyncConnection>(c: &C) -> Result<()> {
     SysDept::auto_migrate(c).await?;
     SysUser::auto_migrate(c).await?;
 
@@ -27,7 +27,7 @@ pub async fn migrate<C: ConnectionTrait>(c: &C) -> Result<()> {
 ```
 
 ```rust
-pub async fn migrate<C: ConnectionTrait>(c: &C) -> Result<()> {
+pub async fn migrate<C: SchemaSyncConnection>(c: &C) -> Result<()> {
     account::migrate(c).await?;
     order::migrate(c).await?;
     log::migrate(c).await?;
@@ -38,8 +38,10 @@ pub async fn migrate<C: ConnectionTrait>(c: &C) -> Result<()> {
 ## 关键点
 
 ```text
-- auto_migrate() 来自 derives/codegen 的生成逻辑。
-- 它适合“表不存在则建表、字段缺失则补字段”的常规场景。
+- auto_migrate() 来自 derives/codegen，内部调用实验性的 SchemaBuilder::sync。
+- 它只创建缺失表、列和索引，不修改或删除已有 schema 对象。
+- 字段类型、约束修改和删除必须使用显式 migration，并经过发布审查。
+- 泛型连接边界使用 SchemaSyncConnection，不重新实现 schema diff。
 - 索引继续用 Model::create_index() / create_index_statement()。
 - 联合索引名尽量简短，普通索引用 idx_，唯一索引用 udx_。
 - 本 reference 默认不展示 relation foreign key migration。
@@ -49,6 +51,7 @@ pub async fn migrate<C: ConnectionTrait>(c: &C) -> Result<()> {
 
 ```text
 ❌ 只会手写 SeaORM MigrationTrait，不知道当前仓库模型自带 auto_migrate()
+❌ 误以为 schema sync 会修改列类型或删除旧字段
 ❌ 联合索引命名过长
 ❌ 用 relation 去表达外键迁移
 ```
@@ -57,6 +60,7 @@ pub async fn migrate<C: ConnectionTrait>(c: &C) -> Result<()> {
 
 ```text
 ✅ 迁移优先用 auto_migrate() + create_index()
+✅ 破坏性 schema 变更使用显式 migration
 ✅ 索引命名保持短而稳定
 ✅ 外键语义保持普通字段 + 业务层保证一致性
 ```

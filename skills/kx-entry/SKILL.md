@@ -114,7 +114,8 @@ description: |
 
 - 模型定义示例
 - 迁移 / `auto_migrate()` 示例
-- `get/sel/qry/m/update_set` 示例
+- `#[sea_orm::model]` + `model_attrs(derive(Sea))` 示例
+- `get/sel/qry/m/upsert/update_set` 示例
 - `SeaTrans` 事务示例
 - 多数据源示例
 - 多表操作示例，且明确禁止使用 relation 做外键
@@ -128,7 +129,7 @@ description: |
 - `install.rs` 模块安装入口
 - `R<T>` / `AxumErr` / `QsQuery` / `Json` / `Path` 用法
 - 基于 `*Qry` / `*ModifyModel` 的 page/list/save/get/del 接口
-- 是否适合 `crud_api!` 的判断
+- 显式 CRUD handler 与后端无关操作日志处理器
 
 ### 8. 一般 `sdks/` 开发
 

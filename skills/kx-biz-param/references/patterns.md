@@ -191,7 +191,7 @@ pub async fn save_data(mut data: DicDataModify) -> Result<()> {
             .set_default()
             .unset_id();
     }
-    let data = data.save(c).await?;
+    let data = data.upsert(c).await?;
     Rds::del(&format!("dic_data:{}", data.dic_code)).await?;
     Ok(())
 }
@@ -245,7 +245,7 @@ pub async fn save(req: I18nSaveData) -> Result<()> {
     match KxI18n::get(db, &req.locale).await {
         Ok(mut v) => {
             v.data.merge(data);
-            v.save(db).await?;
+            v.upsert(db).await?;
         }
         Err(_) => {
             KxI18n::m()

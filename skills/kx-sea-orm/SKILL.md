@@ -1,7 +1,7 @@
 ---
 name: kx-sea-orm
 description: |
-  Use when 任务明确聚焦 SeaORM 与 `#[derive(Sea)]` 的模型定义、迁移、通用增删改查、事务、多数据源和多表操作示例，且明确禁止用 SeaORM relation 做外键。
+  Use when 任务明确聚焦 SeaORM 与 `#[sea_orm::model]` + `#[derive(Sea)]` 的模型定义、迁移、通用增删改查、事务、多数据源和多表操作示例，且明确禁止用 SeaORM relation 做外键。
 
   触发场景：
   - 需要给 `ents/` 或下游业务仓库补一套 SeaORM 示例代码
@@ -10,12 +10,12 @@ description: |
   - 需要把 `derives/codegen/src/table/sea` 的生成能力翻译成可直接照抄的业务模板
   - 需要明确数据库字段设计、软删除设计、主键与索引命名规范
 
-  触发词：SeaORM、derive(Sea)、模型定义、迁移、CRUD、事务、多数据源、多表、外键、relation、auto_migrate、qry、sel、ModifyModel、字段设计、索引设计、主键设计、is_del
+  触发词：SeaORM、sea_orm::model、derive(Sea)、模型定义、迁移、CRUD、upsert、schema sync、事务、多数据源、多表、外键、relation、auto_migrate、qry、sel、ModifyModel、字段设计、索引设计、主键设计、is_del
 ---
 
 # kx-sea-orm
 
-`kx-sea-orm` 是当前仓库里专门给 SeaORM + `#[derive(Sea)]` 写示例代码的 skill。
+`kx-sea-orm` 是当前仓库里专门给 SeaORM 2 dense entity + `#[derive(Sea)]` 写示例代码的 skill。
 它聚焦**实体定义、迁移、CRUD、事务、多数据源、多表操作**六类场景，并且默认坚持：**不要用 SeaORM relation 做外键建模**。
 
 如果仓库里的 SeaORM 生成能力、实践约定或目录规范发生变化，必须同步更新本 skill、相关 repo-local skills 与 `AGENTS.md`，避免示例与真实能力漂移。
@@ -24,7 +24,7 @@ description: |
 
 ### 适用
 
-- 需要写 `#[derive(Sea)]` 模型定义示例
+- 需要写 `#[sea_orm::model]` + `model_attrs(derive(Sea))` 模型定义示例
 - 需要写 `prelude::migrate()` / `auto_migrate()` 风格迁移示例
 - 需要写标准新增、查询、分页、更新、软删除示例
 - 需要写 `SeaTrans` 单库或多库事务示例
@@ -49,6 +49,8 @@ description: |
   - 读 `references/patterns.md`
 - 想确认 `#[derive(Sea)]` 到底生成了哪些能力
   - 读 `references/codegen-map.md`
+- 想了解 SeaORM 2.0 正式版新增能力与 KX 采用边界
+  - 读 `references/sea-orm-2.md`
 - 还需要回看仓库原始参考
   - 对照 `.agents/skills/kx-rs/references/sea-usage.md`
   - 对照 `.agents/skills/kx-rs/references/crud-workflow.md`
@@ -59,8 +61,9 @@ description: |
 1. **禁止用 SeaORM relation 做外键**
    - 不要依赖 `belongs_to`、`has_many`、`find_with_related`、`find_also_related` 这类 relation 流程。
    - 外键语义统一使用普通字段（如 `dept_id`、`user_id`）+ 业务层校验 + 事务保证一致性。
-2. **模型默认保留空 `Relation`**
-   - 示例里的 `Relation` 维持空枚举：`pub enum Relation {}`。
+2. **模型使用 SeaORM 2 dense entity 格式**
+   - 在 `Model` 前标注 `#[sea_orm::model]`，并把 KX derive 放入 `model_attrs(derive(Sea))`。
+   - 不手写空 `Relation`；它与 `ModelEx`、`ActiveModelEx` 等类型由 SeaORM 生成。
 3. **优先走生成能力，不回退到大段手写 SeaORM 样板**
    - 主键查询优先 `<T>::get(c, pk)`
    - 简单筛选优先 `<T>::sel()`
@@ -69,7 +72,8 @@ description: |
 4. **软删表默认过滤 `is_del_eq(false)`**
    - 分页默认补稳定排序；如果没有显式排序，优先 `desc_id()`。
 5. **迁移优先使用模型自带 `auto_migrate()` / `create_index()` 能力**
-   - 这些能力来自 `derives/codegen/src/table/sea` 的生成代码，不需要每次手写 `MigrationTrait`。
+   - `auto_migrate()` 使用实验性的 `SchemaBuilder::sync`，只新增缺失对象，不修改或删除已有对象。
+   - 迁移连接需满足 `SchemaSyncConnection`；破坏性变更继续使用显式 migration。
 6. **字段命名尽量短而稳定**
    - 不要把字段名设计得过长；例如优先 `uid`，不要默认写成 `user_id`。
    - 同类缩写要在全项目保持一致，例如 `uid` / `app_id` / `dept_id` 这类约定字段。
@@ -84,6 +88,11 @@ description: |
    - 先查主表，再批量查从表，然后在 service 层组装返回值。
 11. **涉及 `bins/` / `bizs/` / `ents/` 的目录表达时，要明确这是下游业务仓库约定**
    - 当前工作区本身没有 `bizs/` 或 `bins/`。
+12. **当前稳定基线是 SeaORM 2.0.2**
+   - 可直接使用 `require_one`、`raw_sql!`、嵌套 partial model、时间默认值 helper 等上游 API。
+   - KX 冲突更新使用 `upsert` / `upsert_many`；`ActiveModelTrait::save` 保留 SeaORM 原生 insert/update 语义。
+   - `ModifyModel` 通过 `DeriveIntoActiveModel` 转换；未设置字段为 `NotSet`。
+   - 上游 relation/loader 能力不改变 KX 的普通字段 + service 校验 + 事务约定。
 
 ## 推荐回答顺序
 
@@ -98,9 +107,11 @@ description: |
 
 ```text
 ❌ 看到外键就去写 belongs_to / has_many relation
+❌ 手写空 Relation，或把 Sea derive 放进普通 derive 列表导致 ModelEx 重复生成 KX 扩展
 ❌ 忽略 derive 生成的 qry/sel/m/get，退回 Entity::find() / ActiveModel 大段手写
 ❌ 把多表读取全塞进 relation，而不是显式两段查询
 ❌ 迁移时只会手写 SeaORM MigrationTrait，不知道当前仓库模型自带 auto_migrate()
+❌ 把 auto_migrate 当成可修改列类型或删除字段的完整迁移系统
 ❌ 说“这是当前仓库的 bizs/bins 结构”，把下游业务仓库约定和当前工作区事实混在一起
 ```
 
@@ -108,9 +119,11 @@ description: |
 
 ```text
 ✅ 用普通字段表达外键，如 dept_id / user_id / order_id
+✅ 使用 #[sea_orm::model] + model_attrs(derive(Sea))，由 SeaORM 生成 Relation 与 ModelEx
 ✅ 通过 service 层先校验关联记录存在，再执行写入
 ✅ 查询优先用 <T>::get / <T>::sel / <T>::qry / <T>::m()
-✅ 迁移优先展示 prelude::migrate() + Model::auto_migrate() + Model::create_index()
+✅ 非破坏性补齐使用 auto_migrate()，类型修改和删除使用显式 migration
+✅ 冲突更新使用 upsert；SeaORM 原生 save 只表达 ActiveModel insert/update
 ✅ 多表读取优先“主表分页 -> 收集 IDs -> 批量查询从表 -> 内存组装”
 ```
 

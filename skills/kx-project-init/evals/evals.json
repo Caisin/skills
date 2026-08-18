@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "帮我创建一个新的 kx-rs 模板项目，要从 cargo new 开始，包含依赖、AGENTS.md、.agents 子模块、数据库模块、CRUD 和 README。",
-      "expected_output": "应命中 kx-project-init，给出 cargo new、依赖初始化、AGENTS / long-term-memory / .agents 初始化、数据库与 CRUD 骨架、README 模板，并默认先给简化模板。",
+      "expected_output": "应命中 kx-project-init，给出 cargo new、依赖初始化、AGENTS / long-term-memory / .agents 初始化、数据库与显式 CRUD 骨架、README 模板；实体使用 SeaORM 2 dense 格式，冲突更新使用 upsert，并默认先给简化模板。",
       "files": [
         ".agents/skills/kx-project-init/SKILL.md",
         ".agents/skills/kx-project-init/references/patterns.md",

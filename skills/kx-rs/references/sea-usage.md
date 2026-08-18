@@ -1,6 +1,6 @@
 # Sea Usage Handoff
 
-用于“用户在 kx-rs 语境下问到了 SeaORM / `#[derive(Sea)]`，但问题其实已经进入 `kx-sea-orm` 边界”的场景。
+用于“用户在 kx-rs 语境下问到了 SeaORM / `#[sea_orm::model]` + `#[derive(Sea)]`，但问题其实已经进入 `kx-sea-orm` 边界”的场景。
 
 ## 什么时候直接切去 `kx-sea-orm`
 
@@ -10,14 +10,14 @@
 - 要迁移 / `auto_migrate()` 示例
 - 要通用 CRUD 示例
 - 要事务、多数据源或多表操作示例
-- 要解释 `get()/sel()/qry()/m()/update_set()` 怎么写
+- 要解释 `get()/sel()/qry()/m()/upsert()/update_set()` 怎么写
 - 明确要求**不要使用 SeaORM relation 做外键**
 
 ## 推荐说法
 
 ```text
 这部分已经属于 kx-sea-orm 的职责边界。
-如果你要的是 SeaORM / #[derive(Sea)] 的代码模板，我会直接按 kx-sea-orm 给你示例。
+如果你要的是 SeaORM 2 dense entity / #[derive(Sea)] 的代码模板，我会直接按 kx-sea-orm 给你示例。
 ```
 
 ## 为什么不再在 kx-rs 里重复展开

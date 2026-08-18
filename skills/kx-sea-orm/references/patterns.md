@@ -13,10 +13,10 @@
 | 任务类型 | 优先 reference | 关注点 |
 | --- | --- | --- |
 | 字段 / 主键 / 索引 / `is_del` 设计 | `schema-design.md` | 字段长度、类型、系统字段、主键、索引命名 |
-| 建表 / 补字段 / 索引创建 | `migration.md` | `auto_migrate()`、`create_index()` |
-| 标准增删改查 | `crud.md` | `get/sel/qry/m/update_set` |
+| 非破坏性 schema sync / 显式迁移 / 索引创建 | `migration.md` | `auto_migrate()`、`SchemaSyncConnection`、`create_index()` |
+| 标准增删改查 | `crud.md` | `get/sel/qry/m/upsert/update_set` |
 | 事务 / 多数据源 / 多表操作 | `transaction-and-multi-table.md` | `SeaTrans`、两段查询、跨库操作 |
-| 生成能力来源解释 | `codegen-map.md` | `derive(Sea)` 生成入口 |
+| 生成能力来源解释 | `codegen-map.md` | dense entity + `derive(Sea)` 生成入口 |
 
 ## 推荐做法
 

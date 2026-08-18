@@ -7,9 +7,9 @@ description: |
   - 需要写 `ctl/` handler、`router.rs` 路由收口、`install.rs` 装配或 `bins/*` 入口
   - 需要使用 `kx_axum::{R, AxumErr, Json, ext::QsQuery}` 组织 web 接口
   - 需要示范基于 `*Qry`、`*ModifyModel` 的列表、分页、保存、删除接口
-  - 需要判断简单 CRUD 应该手写 handler 还是使用 `crud_api!`
+  - 需要手写薄 CRUD handler，或接入后端无关的操作日志处理方法
 
-  触发词：kx-axum、web层、ctl、router、install、bin、main.rs、build.rs、cfg.toml、handler、AxumErr、QsQuery、Json、Path、crud_api、接口层、路由、分页接口
+  触发词：kx-axum、web层、ctl、router、install、bin、main.rs、build.rs、cfg.toml、handler、AxumErr、QsQuery、Json、Path、OperationLog、日志处理、接口层、路由、分页接口
 ---
 
 # kx-axum-web
@@ -21,7 +21,7 @@ description: |
 
 - **业务模块风格**：`ctl/` 保持薄、`svc/` 收口事务与编排、`router.rs` 用 `nest()` 聚合、`install.rs` 做迁移入口
 - **bin 入口风格**：`main.rs` 负责子命令分流、读取配置、装配路由并调用 `kx_axum::run(...)` 启动
-- `crates/axum/` 暴露的统一返回、extractor 与 `crud_api!` 能力
+- `crates/axum/` 暴露的统一返回、extractor、启动后处理与操作日志处理能力
 - `kx-sea-orm` 提供的 `Query / ModifyModel / Model` codegen 能力
 
 ## 适用边界
@@ -34,7 +34,8 @@ description: |
 - 需要写 `bins/*/src/main.rs`、可选 `build.rs`、`cfg.toml` 的启动与装配示例
 - 需要写 `Result<R<T>, AxumErr>` 风格接口
 - 需要基于 `*Qry`、`*ModifyModel` 写 page/list/save/get/del
-- 需要判断是否适合 `crud_api!`
+- 需要用显式 handler 组织简单 CRUD
+- 需要通过 `OperationLogProcessor` 接入数据库、消息队列或远端日志中心
 - 需要兼顾 `openapi-scan` 的 router / handler 组织方式
 
 ### 不适用
@@ -77,9 +78,9 @@ description: |
    - 不要在业务接口里随意返回裸 `Json<T>` 或裸 `Vec<T>`
 5. **router 与 handler 保持同一 `impl XxxCtl` 习惯用法**
    - 这样更贴近当前仓库 `openapi-scan` 兼容写法。
-6. **简单 CRUD 可考虑 `crud_api!`，复杂接口继续手写**
-   - 纯 page/get/save/del 且几乎不加业务逻辑时，可用 `crud_api!`
-   - 需要额外校验、事务、多表拼装时，继续手写 `ctl + svc`
+6. **CRUD 一律使用显式 handler**
+   - `crud_api!` 已移除，不再生成隐藏的 page/get/save/del 方法。
+   - 简单 CRUD 也写薄 handler，复用 `*Qry` / `*ModifyModel`；事务与多表编排下沉到 `svc/`。
 7. **简单模板优先，复杂模板后置**
    - 默认先给单工程 / 单 crate 模板：`ents/` 放模型，`main.rs` 放启动与路由装配。
    - 只有用户明确是大型工程、需要分层协作或多个独立模块时，再推荐 `bins/* + bizs/* + ents/*` 多 crate 结构。
@@ -94,7 +95,7 @@ description: |
 1. 先判断用户要的是单工程简单模板，还是大工程分 crate 模板
 2. 再判断用户要的是 `ctl/`、`router.rs`、`install.rs`、`bins/*` 入口，还是整套 web 模块
 3. 再从 `references/patterns.md` 摘对应模板
-4. 如果用户追问 `R` / `AxumErr` / `crud_api!` / `QsQuery` 的来源，再补 `references/kx-axum-map.md`
+4. 如果用户追问 `R` / `AxumErr` / `QsQuery` / `OperationLog` 的来源，再补 `references/kx-axum-map.md`
 5. 如果问题已经变成实体/迁移模板，直接 handoff 到 `kx-sea-orm`
 
 ## 常见错误 vs 正确做法
@@ -105,7 +106,7 @@ description: |
 ❌ 把事务、多表写入、复杂组装全部塞进 ctl/
 ❌ 不复用 *Qry / *ModifyModel，手写一堆重复 DTO
 ❌ 接口层直接返回裸类型，不走 R<T> / AxumErr
-❌ 所有接口都手写，忽略 crud_api! 的简单场景
+❌ 继续使用已移除的 crud_api!，让接口签名隐藏在宏展开中
 ❌ 明明在问实体/迁移模板，却继续停留在 web 层 skill 里回答
 ```
 
@@ -115,7 +116,7 @@ description: |
 ✅ ctl/ 保持薄，复杂逻辑下沉到 svc/
 ✅ page/list/save 优先接 *Qry / *ModifyModel / Model
 ✅ 统一返回 Result<R<T>, AxumErr>
-✅ 简单 CRUD 用 crud_api!，复杂接口手写 ctl + svc
+✅ 简单 CRUD 使用显式薄 handler，复杂接口使用 ctl + svc
 ✅ 一旦问题下钻到 SeaORM 模型/迁移/事务模板，直接切到 kx-sea-orm
 ```
 

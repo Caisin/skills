@@ -83,7 +83,7 @@ kx-sea-orm = { version = "0.1", registry = "hekx", features = ["postgres", "sqli
 kx-sea-common = { version = "0.1", registry = "hekx" }
 kx-tools = { version = "0.1", registry = "hekx", features = ["times"] }
 kx-tracing = { version = "0.1", registry = "hekx" }
-sea-orm = { version = "2.0.0-rc.37" }
+sea-orm = { version = "2.0.2" }
 ```
 
 ### `.agents` 子模块初始化
@@ -100,8 +100,9 @@ use kx_sea_common::Sea;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Sea, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize, Default)]
-#[sea_orm(table_name = "user", comment = "用户表")]
+#[sea_orm::model]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize, Default)]
+#[sea_orm(table_name = "user", comment = "用户表", model_attrs(derive(Sea)))]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i64,
@@ -109,9 +110,6 @@ pub struct Model {
     pub created_at: i64,
     pub updated_at: i64,
 }
-
-#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
 ```
@@ -178,7 +176,7 @@ impl UserCtl {
             req.set_created_at(now).set_default().unset_id();
         }
         req.set_updated_at(now);
-        req.save(c).await?;
+        req.upsert(c).await?;
         Ok(R::ok(()))
     }
 }

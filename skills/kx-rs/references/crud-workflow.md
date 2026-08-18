@@ -73,5 +73,5 @@
   - 看 `source-navigation.md`
 - 明确要 SeaORM 模型 / 迁移 / CRUD / 事务模板
   - 直接切 `kx-sea-orm`
-- 明确要 ctl/router/install、R/AxumErr、QsQuery、crud_api! 的接口层模板
+- 明确要 ctl/router/install、R/AxumErr、QsQuery、显式 CRUD handler 或操作日志处理器的接口层模板
   - 直接切 `kx-axum-web`

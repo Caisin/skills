@@ -15,8 +15,8 @@
     },
     {
       "id": 3,
-      "prompt": "我要在实践层项目里加一个带 #[derive(Sea)] 的实体和控制器，先看哪里？",
-      "expected_output": "识别为下游实践层开发问题，明确 bins/bizs/ents 是下游业务仓库约定，并 handoff 到 kx-rs。",
+      "prompt": "我要在实践层项目里加一个 SeaORM 2 dense entity 和显式 CRUD 控制器，先看哪里？",
+      "expected_output": "识别为下游实践层开发问题，明确 bins/bizs/ents 是下游业务仓库约定，并 handoff 到 kx-rs；实体细节继续交给 kx-sea-orm，控制器细节交给 kx-axum-web。",
       "files": []
     },
     {

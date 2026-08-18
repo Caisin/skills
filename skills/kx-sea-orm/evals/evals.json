@@ -18,6 +18,17 @@
       "files": [
         ".agents/skills/kx-sea-orm/SKILL.md"
       ]
+    },
+    {
+      "id": 3,
+      "prompt": "把 #[derive(Sea)] 实体升级成 SeaORM 2 dense entity，并说明 auto_migrate 和 save 应该怎么迁移。",
+      "expected_output": "应使用 #[sea_orm::model] + model_attrs(derive(Sea))，不手写空 Relation；说明 auto_migrate 使用实验性 SchemaBuilder::sync 且只新增缺失对象；数据库级冲突更新改用 upsert，ActiveModelTrait::save 保留 SeaORM 原生语义。",
+      "files": [
+        ".agents/skills/kx-sea-orm/SKILL.md",
+        ".agents/skills/kx-sea-orm/references/codegen-map.md",
+        ".agents/skills/kx-sea-orm/references/migration.md",
+        ".agents/skills/kx-sea-orm/references/sea-orm-2.md"
+      ]
     }
   ]
 }

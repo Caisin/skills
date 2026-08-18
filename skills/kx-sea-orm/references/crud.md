@@ -23,7 +23,7 @@ pub async fn create_user<C: ConnectionTrait>(c: &C, name: String, mobile: String
         .set_is_del(false)
         .set_created_at(now)
         .set_updated_at(now);
-    Ok(m.save(c).await?)
+    m.upsert(c).await
 }
 ```
 
@@ -95,6 +95,8 @@ pub async fn delete_user<C: ConnectionTrait>(c: &C, id: i64) -> Result<()> {
 - 简单条件查优先 sel()。
 - 分页 / 排序 / 批量更新优先 qry()。
 - 更新构造优先 m() 或 update_set()。
+- 主键冲突时插入或更新使用 upsert()；不要把它写成 save()。
+- ActiveModelTrait::save 保留 SeaORM 原生的按主键状态 insert/update 语义。
 - 软删表默认补 is_del_eq(false)。
 ```
 
@@ -105,6 +107,7 @@ pub async fn delete_user<C: ConnectionTrait>(c: &C, id: i64) -> Result<()> {
 ❌ 分页查询忘记 desc_id()，翻页结果不稳定
 ❌ 软删表没有 is_del_eq(false)
 ❌ 保存时不补 created_at / updated_at / set_default 语义
+❌ 把 KX 冲突更新和 SeaORM ActiveModelTrait::save 当成同一种语义
 ```
 
 ## 正确做法
@@ -114,4 +117,5 @@ pub async fn delete_user<C: ConnectionTrait>(c: &C, id: i64) -> Result<()> {
 ✅ 分页默认补稳定排序
 ✅ 软删表默认统一过滤 is_del_eq(false)
 ✅ 更新与保存语义尽量保持一致且可复用
+✅ 需要冲突更新时显式调用 upsert()
 ```
