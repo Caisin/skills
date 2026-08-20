@@ -41,6 +41,21 @@ pub struct Model {
 impl ActiveModelBehavior for ActiveModel {}
 ```
 
+关系拥有侧使用 `skip_fk`，保留 relation 元数据但不生成数据库外键：
+
+```rust
+#[sea_orm::model]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+#[sea_orm(table_name = "sys_user", model_attrs(derive(Sea)))]
+pub struct Model {
+    #[sea_orm(primary_key)]
+    pub id: i64,
+    pub dept_id: i64,
+    #[sea_orm(belongs_to, from = "dept_id", to = "id", skip_fk)]
+    pub dept: BelongsTo<super::sys_dept::Entity>,
+}
+```
+
 ```rust
 pub async fn migrate<C: SchemaSyncConnection>(c: &C) -> Result<()> {
     SysUser::auto_migrate(c).await?;
@@ -74,6 +89,8 @@ pub async fn migrate<C: SchemaSyncConnection>(c: &C) -> Result<()> {
 - 避免直接使用 SQL / 数据库保留关键字作为字段名，例如：`order`、`group`、`key`、`index`、`table`、`select`、`from`、`desc`。
 - 每个表必须有主键。
 - 实体使用 `#[sea_orm::model]` + `model_attrs(derive(Sea))`；不要手写空 `Relation`。
+- relation 字段使用 `BelongsTo` / `HasOne` / `HasMany`；拥有外键字段的 `belongs_to` 必须声明 `skip_fk`。
+- relation 只用于 JOIN、loader 和 Seaography；关联存在性继续由 service 校验，数据库不创建外键。
 - 普通业务表优先单整数主键；只有在关系表、桥表、天然联合唯一键场景下，才考虑联合主键。
 - 单字段索引优先直接使用 `#[sea_orm(indexed)]`。
 - 联合索引名字不要太长，普通索引以 `idx_` 开头，唯一索引以 `udx_` 开头。
@@ -89,6 +106,7 @@ pub async fn migrate<C: SchemaSyncConnection>(c: &C) -> Result<()> {
 ❌ 软删表没有 is_del / deleted_at 组合
 ❌ 联合索引名字过长，难读也难维护
 ❌ 把 `state` 当成删除标志用
+❌ `belongs_to` 遗漏 `skip_fk`，让实体迁移创建数据库外键
 ```
 
 ## 正确做法
@@ -100,4 +118,5 @@ pub async fn migrate<C: SchemaSyncConnection>(c: &C) -> Result<()> {
 ✅ JSON 字段直接使用 Json 类型
 ✅ 软删除表统一用 is_del 表达删除语义
 ✅ 索引命名保持 idx_/udx_ 规则，且尽量简短
+✅ relation 拥有侧使用 skip_fk，并由 service + 事务维护关联一致性
 ```

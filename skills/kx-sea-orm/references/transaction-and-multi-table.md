@@ -7,7 +7,7 @@
 - 同一数据源里跨多张表写入
 - 主业务库 + 日志库
 - 想查“用户 + 部门名”这类组合视图
-- 不能用 relation，想看手工两段查询怎么写
+- 需要在 relation、loader 与手工两段查询之间选择
 
 ## 推荐模板
 
@@ -110,13 +110,15 @@ pub async fn page_users_with_dept<C: ConnectionTrait>(c: &C, paging: Paging) -> 
 - 多表读优先两段式：主表 -> 收集 IDs -> 批量查从表 -> 内存组装。
 - 单库多表写可用 SeaTrans 收口并保持数据库事务原子性。
 - 多库写仅是按顺序提交的 best-effort 协调，不保证跨库原子性；业务必须设计补偿或幂等重试。
-- 不使用 relation 也不影响一致性；一致性由 service 顺序与事务保证。
+- relation 只提供查询元数据，不影响一致性边界；一致性由 service 顺序与事务保证。
+- 列表分页和复杂组合读取仍优先两段式批量查询；明确的类型化 JOIN、loader 和 Seaography 可使用 relation。
 ```
 
 ## 常见错误
 
 ```text
-❌ 把多表读取全塞进 relation，而不是显式两段查询
+❌ 列表逐行加载 relation，制造 N+1
+❌ 把 relation 当成数据库外键或事务保证
 ❌ 多表读取只会 N+1 一条条查
 ❌ 事务逻辑散落在 ctl 和 svc 多处
 ❌ 明明是多库事务，却分散在多个函数里手动提交
@@ -129,5 +131,6 @@ pub async fn page_users_with_dept<C: ConnectionTrait>(c: &C, paging: Paging) -> 
 ✅ 多表读取优先批量 is_in + HashMap 组装
 ✅ 多表写和多库写可用 SeaTrans 收口，但明确多库仅为 best-effort
 ✅ 外键字段保持普通字段 + service 校验
-✅ 一致性靠事务保证，不靠 relation 魔法
+✅ `belongs_to` 声明 `skip_fk`，查询可使用 relation
+✅ 一致性靠事务保证，不靠 relation 元数据
 ```

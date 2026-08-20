@@ -44,7 +44,8 @@ pub async fn migrate<C: SchemaSyncConnection>(c: &C) -> Result<()> {
 - 泛型连接边界使用 SchemaSyncConnection，不重新实现 schema diff。
 - 索引继续用 Model::create_index() / create_index_statement()。
 - 联合索引名尽量简短，普通索引用 idx_，唯一索引用 udx_。
-- 本 reference 默认不展示 relation foreign key migration。
+- relation 拥有侧必须声明 `skip_fk`，让实体建表和 schema sync 跳过数据库外键。
+- `skip_fk` 不会删除已有外键；移除旧约束仍需显式 migration。
 ```
 
 ## 常见错误
@@ -53,7 +54,8 @@ pub async fn migrate<C: SchemaSyncConnection>(c: &C) -> Result<()> {
 ❌ 只会手写 SeaORM MigrationTrait，不知道当前仓库模型自带 auto_migrate()
 ❌ 误以为 schema sync 会修改列类型或删除旧字段
 ❌ 联合索引命名过长
-❌ 用 relation 去表达外键迁移
+❌ `belongs_to` 遗漏 `skip_fk`，让 schema sync 创建外键
+❌ 以为增加 `skip_fk` 会自动删除已有数据库外键
 ```
 
 ## 正确做法
@@ -62,5 +64,6 @@ pub async fn migrate<C: SchemaSyncConnection>(c: &C) -> Result<()> {
 ✅ 迁移优先用 auto_migrate() + create_index()
 ✅ 破坏性 schema 变更使用显式 migration
 ✅ 索引命名保持短而稳定
-✅ 外键语义保持普通字段 + 业务层保证一致性
+✅ relation 用于查询建模，数据库外键保持禁用
+✅ 外键字段由业务层校验并通过事务维护一致性
 ```

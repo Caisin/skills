@@ -15,9 +15,11 @@
 - async transaction helper、连接池 `before_acquire` hook、`Paginator::set_page`。
 - `date_time_default_now`、`timestamp_default_now`、`timestamp_with_time_zone_default_now` Schema helper。
 
-## KX 暂不改变的边界
+## KX 采用边界
 
-- 不使用 `belongs_to` / `has_many` / loader relation 建模外键；继续用普通 ID 字段、service 校验和事务。
+- 允许在 dense entity 中直接声明 `belongs_to` / `has_one` / `has_many`，供 JOIN、loader 与 Seaography 使用。
+- 禁止数据库外键；实际拥有外键字段的 `belongs_to` 必须声明 `skip_fk`。
+- relation 不提供引用完整性保证；继续使用普通 ID 字段、service 校验和事务。
 - 不因上游提供 RBAC `RestrictedConnection` 就替换现有认证/授权体系。
 - 不为每个上游 helper 增加一层同名 KX wrapper；能稳定重导出的 API 直接使用。
 - KX 冲突更新使用 `upsert` / `upsert_many`，不遮蔽 SeaORM 原生 `ActiveModelTrait::save`。
@@ -27,7 +29,8 @@
 ## 常见错误
 
 ```text
-❌ 因为 SeaORM 2.0 支持 typed relation，就在 KX 模型中恢复 relation 外键
+❌ `belongs_to` 不写 `skip_fk`，把 relation 误变成数据库外键
+❌ 使用普通 `Option<Entity>` / `Vec<Entity>` 代替当前 2.0.2 的 BelongsTo / HasOne / HasMany 包装类型
 ❌ 为每个上游新 helper 再包装一个同名 KX API
 ❌ 升级依赖后假设数据库 Schema 会自动变化
 ❌ 把 schema sync 当成能修改列类型或删除字段的完整迁移系统
@@ -42,6 +45,7 @@
 ✅ 直接使用 kx-sea-orm 重导出的稳定上游 API
 ✅ require_one 用于业务上必须存在的单行读取
 ✅ 实体使用 #[sea_orm::model] + model_attrs(derive(Sea))
+✅ relation 字段使用 BelongsTo / HasOne / HasMany，belongs_to 必须 skip_fk
 ✅ 非破坏性补齐使用 auto_migrate，破坏性变更使用显式 migration
 ✅ 冲突更新使用 upsert，原生 save 保持 SeaORM insert/update 语义
 ✅ 继续使用普通 ID 字段、service 校验和事务维护关联一致性

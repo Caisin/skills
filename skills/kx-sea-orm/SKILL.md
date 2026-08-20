@@ -1,12 +1,12 @@
 ---
 name: kx-sea-orm
 description: |
-  Use when 任务明确聚焦 SeaORM 与 `#[sea_orm::model]` + `#[derive(Sea)]` 的模型定义、迁移、通用增删改查、事务、多数据源和多表操作示例，且明确禁止用 SeaORM relation 做外键。
+  Use when 任务明确聚焦 SeaORM 与 `#[sea_orm::model]` + `#[derive(Sea)]` 的模型定义、迁移、通用增删改查、事务、多数据源和多表操作示例；允许使用 relation，但禁止创建数据库外键。
 
   触发场景：
   - 需要给 `ents/` 或下游业务仓库补一套 SeaORM 示例代码
   - 需要解释 `qry()/sel()/m()/get()/auto_migrate()` 应该怎么配合使用
-  - 需要示范不依赖 `belongs_to/has_many/find_with_related` 的手工外键与多表读写
+  - 需要示范 `belongs_to/has_one/has_many`、`skip_fk` 或两段式多表读写
   - 需要把 `derives/codegen/src/table/sea` 的生成能力翻译成可直接照抄的业务模板
   - 需要明确数据库字段设计、软删除设计、主键与索引命名规范
 
@@ -16,7 +16,7 @@ description: |
 # kx-sea-orm
 
 `kx-sea-orm` 是当前仓库里专门给 SeaORM 2 dense entity + `#[derive(Sea)]` 写示例代码的 skill。
-它聚焦**实体定义、迁移、CRUD、事务、多数据源、多表操作**六类场景，并且默认坚持：**不要用 SeaORM relation 做外键建模**。
+它聚焦**实体定义、迁移、CRUD、事务、多数据源、多表操作**六类场景，并且默认坚持：**可以使用 SeaORM relation，但不能创建数据库外键**。
 
 如果仓库里的 SeaORM 生成能力、实践约定或目录规范发生变化，必须同步更新本 skill、相关 repo-local skills 与 `AGENTS.md`，避免示例与真实能力漂移。
 
@@ -29,7 +29,7 @@ description: |
 - 需要写标准新增、查询、分页、更新、软删除示例
 - 需要写 `SeaTrans` 单库或多库事务示例
 - 需要写多数据源联动示例
-- 需要写**不使用 relation** 的多表读写示例
+- 需要写 relation、loader 或两段式多表读写示例
 - 需要制定字段长度、类型、软删除、主键、索引命名等数据库设计规范
 
 ### 不适用
@@ -58,9 +58,10 @@ description: |
 
 ## 核心规则
 
-1. **禁止用 SeaORM relation 做外键**
-   - 不要依赖 `belongs_to`、`has_many`、`find_with_related`、`find_also_related` 这类 relation 流程。
-   - 外键语义统一使用普通字段（如 `dept_id`、`user_id`）+ 业务层校验 + 事务保证一致性。
+1. **允许 relation，但禁止数据库外键**
+   - dense entity 可以直接声明 `belongs_to`、`has_one`、`has_many`，并使用 JOIN、loader、`find_with_related` 或 Seaography。
+   - 实际持有外键字段的 `belongs_to` 必须声明 `skip_fk`；`has_one` / `has_many` 是反向关系，本身不生成数据库外键。
+   - relation 只表达查询关系，不保证引用完整性；普通 ID 字段仍由 service 校验并通过事务维护一致性。
 2. **模型使用 SeaORM 2 dense entity 格式**
    - 在 `Model` 前标注 `#[sea_orm::model]`，并把 KX derive 放入 `model_attrs(derive(Sea))`。
    - 不手写空 `Relation`；它与 `ModelEx`、`ActiveModelEx` 等类型由 SeaORM 生成。
@@ -84,15 +85,15 @@ description: |
    - 数字字段统一优先 `i64` / `i32`，不要使用 `u64` / `u32` / `usize` 作为持久化字段类型。
 9. **JSON 字段直接使用 `Json` 类型**
    - 需要存 JSON 时，字段类型优先 `Json`，不要退回 `String` 存原始 JSON 文本。
-10. **多表读取优先两段式 / 显式查询**
-   - 先查主表，再批量查从表，然后在 service 层组装返回值。
+10. **按查询形态选择 relation 或两段式查询**
+   - 类型化 JOIN、loader 和 Seaography 可使用 relation；列表分页和复杂组合读取仍优先“主表 -> 批量从表 -> service 组装”，避免 N+1。
 11. **涉及 `bins/` / `bizs/` / `ents/` 的目录表达时，要明确这是下游业务仓库约定**
    - 当前工作区本身没有 `bizs/` 或 `bins/`。
 12. **当前稳定基线是 SeaORM 2.0.2**
    - 可直接使用 `require_one`、`raw_sql!`、嵌套 partial model、时间默认值 helper 等上游 API。
    - KX 冲突更新使用 `upsert` / `upsert_many`；`ActiveModelTrait::save` 保留 SeaORM 原生 insert/update 语义。
    - `ModifyModel` 通过 `DeriveIntoActiveModel` 转换；未设置字段为 `NotSet`。
-   - 上游 relation/loader 能力不改变 KX 的普通字段 + service 校验 + 事务约定。
+   - relation 必须与数据库外键解耦；`belongs_to` 使用 `skip_fk`，关联一致性继续由 service + 事务保证。
 
 ## 推荐回答顺序
 
@@ -106,10 +107,11 @@ description: |
 ### 常见错误
 
 ```text
-❌ 看到外键就去写 belongs_to / has_many relation
+❌ `belongs_to` 遗漏 `skip_fk`，让 auto_migrate 生成数据库外键
+❌ 把 relation 当作引用完整性或级联写入保证
 ❌ 手写空 Relation，或把 Sea derive 放进普通 derive 列表导致 ModelEx 重复生成 KX 扩展
 ❌ 忽略 derive 生成的 qry/sel/m/get，退回 Entity::find() / ActiveModel 大段手写
-❌ 把多表读取全塞进 relation，而不是显式两段查询
+❌ 列表查询逐行加载 relation，制造 N+1
 ❌ 迁移时只会手写 SeaORM MigrationTrait，不知道当前仓库模型自带 auto_migrate()
 ❌ 把 auto_migrate 当成可修改列类型或删除字段的完整迁移系统
 ❌ 说“这是当前仓库的 bizs/bins 结构”，把下游业务仓库约定和当前工作区事实混在一起
@@ -119,7 +121,8 @@ description: |
 
 ```text
 ✅ 用普通字段表达外键，如 dept_id / user_id / order_id
-✅ 使用 #[sea_orm::model] + model_attrs(derive(Sea))，由 SeaORM 生成 Relation 与 ModelEx
+✅ 使用 #[sea_orm::model] + model_attrs(derive(Sea))，并在 belongs_to 上声明 skip_fk
+✅ 使用 BelongsTo / HasOne / HasMany 直接定义 relation，由 SeaORM 生成 Relation 与 ModelEx
 ✅ 通过 service 层先校验关联记录存在，再执行写入
 ✅ 查询优先用 <T>::get / <T>::sel / <T>::qry / <T>::m()
 ✅ 非破坏性补齐使用 auto_migrate()，类型修改和删除使用显式 migration
@@ -156,7 +159,7 @@ description: |
 **Input**
 
 ```text
-给我一套 kx 里能用的 SeaORM 示例：用户表和部门表，包含模型定义、迁移、CRUD、事务、多数据源和多表查询，而且不要用 relation。
+给我一套 kx 里能用的 SeaORM 示例：用户表和部门表，包含模型定义、迁移、CRUD、事务、多数据源和多表查询；需要 relation，但不能创建数据库外键。
 ```
 
 **Output direction**
@@ -164,6 +167,6 @@ description: |
 ```text
 - 先明确这是 kx-sea-orm 命中的六段式示例场景。
 - 先给模型定义与迁移，再给 CRUD 与事务，最后给多数据源和多表两段查询。
-- 明确 dept_id 只是普通字段，关联一致性靠业务层校验与事务保证，不使用 SeaORM relation。
+- 在用户侧 `belongs_to` 上声明 `skip_fk`，部门侧可声明 `has_many`；说明 relation 只用于查询，关联一致性仍靠业务层校验与事务保证。
 - 如果用户后续还想继续扩成完整 biz/svc/ctl/router 落地，再 handoff 到 kx-rs。
 ```

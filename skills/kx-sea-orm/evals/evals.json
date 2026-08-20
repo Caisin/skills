@@ -3,8 +3,8 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "给我一套 kx 里能用的 SeaORM 示例，分成模型定义、迁移、CRUD、事务、多数据源和多表查询，而且不要用 relation 外键。",
-      "expected_output": "应命中 kx-sea-orm，按六段式给出示例，并明确外键使用普通字段 + service 校验 + 事务，不使用 belongs_to/has_many/find_with_related。",
+      "prompt": "给我一套 kx 里能用的 SeaORM 示例，分成模型定义、迁移、CRUD、事务、多数据源和多表查询；需要 relation，但数据库不能创建外键。",
+      "expected_output": "应命中 kx-sea-orm，按六段式给出示例；允许 BelongsTo/HasOne/HasMany 和 relation 查询，但 belongs_to 必须声明 skip_fk，关联一致性继续使用普通 ID 字段 + service 校验 + 事务。",
       "files": [
         ".agents/skills/kx-sea-orm/SKILL.md",
         ".agents/skills/kx-sea-orm/references/patterns.md",
@@ -26,6 +26,17 @@
       "files": [
         ".agents/skills/kx-sea-orm/SKILL.md",
         ".agents/skills/kx-sea-orm/references/codegen-map.md",
+        ".agents/skills/kx-sea-orm/references/migration.md",
+        ".agents/skills/kx-sea-orm/references/sea-orm-2.md"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "SeaORM 2 dense entity 里给用户和部门定义 relation，但 KX 不允许数据库外键，应该怎么写？",
+      "expected_output": "应在拥有 dept_id 的用户实体上声明 BelongsTo 并给 belongs_to 属性添加 skip_fk；部门实体可声明 HasMany。说明 relation 可用于 JOIN、loader 和 Seaography，但不保证引用完整性，已有数据库外键也不会被 skip_fk 自动删除。",
+      "files": [
+        ".agents/skills/kx-sea-orm/SKILL.md",
+        ".agents/skills/kx-sea-orm/references/schema-design.md",
         ".agents/skills/kx-sea-orm/references/migration.md",
         ".agents/skills/kx-sea-orm/references/sea-orm-2.md"
       ]

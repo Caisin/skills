@@ -10,6 +10,7 @@
 - 生成 #[sea_orm::model] dense entity 模板。
 - 通过 model_attrs(derive(Sea)) 只给持久化 Model 注入 KX 扩展。
 - Relation、ModelEx、ActiveModelEx 等类型由 SeaORM 2 生成，不手写空 Relation。
+- codegen 没有业务关系元数据时不猜测 relation；下游可在 dense entity 中显式声明关系，`belongs_to` 必须带 `skip_fk`。
 - 生成 get_pk_val() / unset_pks() 这类主键辅助能力。
 ```
 
@@ -128,6 +129,8 @@ let saved = m.upsert(c).await?;
 ❌ 只记住 qry()/m()/auto_migrate() 能用，却不知道它们来自哪里
 ❌ 以为 derive 只生成 Entity/Model，没有 Query 和 ModifyModel
 ❌ 手写空 Relation，或让 Sea derive 同时落到 ModelEx
+❌ 期待 codegen 根据普通 ID 字段自动猜测 relation
+❌ `belongs_to` 遗漏 `skip_fk`，让实体 Schema DDL 创建数据库外键
 ❌ 把 upsert 与 SeaORM 原生 ActiveModelTrait::save 混为一谈
 ❌ 生成行为不符合预期时，只在业务代码里猜，不回看 derives/codegen
 ```
@@ -138,5 +141,6 @@ let saved = m.upsert(c).await?;
 ✅ 先用 patterns.md 回答业务模板，再用这份 map 解释生成来源
 ✅ 需要确认 API 边界时，直接按文件回看 sea_model.rs / sea_query.rs / sea_modify_model.rs
 ✅ dense entity 使用 model_attrs(derive(Sea))，冲突更新显式使用 upsert
+✅ 显式 relation 使用 BelongsTo / HasOne / HasMany，关系拥有侧声明 skip_fk
 ✅ 迁移、查询、更新模板都优先和 codegen 真实生成能力保持一致
 ```
