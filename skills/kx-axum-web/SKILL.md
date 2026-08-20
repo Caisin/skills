@@ -9,7 +9,7 @@ description: |
   - 需要示范基于 `*Qry`、`*ModifyModel` 的列表、分页、保存、删除接口
   - 需要判断简单 CRUD 应该手写 handler 还是使用 `crud_api!`
 
-  触发词：kx-axum、web层、ctl、router、install、bin、main.rs、build.rs、cfg.toml、handler、AxumErr、QsQuery、Json、Path、crud_api、接口层、路由、分页接口
+  触发词：kx-axum、web层、ctl、router、install、bin、main.rs、cfg.toml、handler、AxumErr、QsQuery、Json、Path、crud_api、接口层、路由、分页接口
 ---
 
 # kx-axum-web
@@ -31,11 +31,10 @@ description: |
 - 需要写 `ctl/` handler
 - 需要写 `router.rs` 路由聚合 / `nest()` 收口
 - 需要写 `install.rs` 模块安装或迁移入口
-- 需要写 `bins/*/src/main.rs`、可选 `build.rs`、`cfg.toml` 的启动与装配示例
+- 需要写 `bins/*/src/main.rs`、`cfg.toml` 的启动与装配示例
 - 需要写 `Result<R<T>, AxumErr>` 风格接口
 - 需要基于 `*Qry`、`*ModifyModel` 写 page/list/save/get/del
 - 需要判断是否适合 `crud_api!`
-- 需要兼顾 `openapi-scan` 的 router / handler 组织方式
 
 ### 不适用
 
@@ -76,7 +75,7 @@ description: |
    - handler 签名优先 `Result<R<T>, AxumErr>`
    - 不要在业务接口里随意返回裸 `Json<T>` 或裸 `Vec<T>`
 5. **router 与 handler 保持同一 `impl XxxCtl` 习惯用法**
-   - 这样更贴近当前仓库 `openapi-scan` 兼容写法。
+   - 这样便于在同一控制器内集中维护路由和 handler。
 6. **简单 CRUD 可考虑 `crud_api!`，复杂接口继续手写**
    - 纯 page/get/save/del 且几乎不加业务逻辑时，可用 `crud_api!`
    - 需要额外校验、事务、多表拼装时，继续手写 `ctl + svc`
@@ -86,7 +85,6 @@ description: |
 8. **安装入口与迁移入口分开理解**
    - `router.rs` 负责路由聚合
    - `install.rs` 负责模块迁移 / 初始化
-   - `build.rs` 生成 OpenAPI 是可选项，不是必选项
    - 具体实体迁移模板本身交给 `kx-sea-orm`
 
 ## 推荐回答顺序

@@ -18,7 +18,7 @@ Result<R<T>, AxumErr>
 3. `ctl/` 负责收参与返回；复杂事务、多表拼装、关联写入优先下沉到 `svc/`。
 4. `router.rs` 负责 `nest()` 路由聚合；`install.rs` 负责迁移或初始化。
 5. 默认先给单工程 / 单 crate 模板，只有大型工程再拆 `bins/* + bizs/* + ents/*`。
-6. `bins/*` 负责 server / install 子命令与 `kx_axum::run(...)` 启动；`build.rs` 生成 OpenAPI 是可选项。
+6. `bins/*` 负责 server / install 子命令与 `kx_axum::run(...)` 启动。
 7. 如果只是简单 CRUD，可优先考虑 `crud_api!`。
 
 ---
@@ -440,7 +440,6 @@ impl XxxInstall {
 ### 适用场景
 
 - 需要补 `main.rs` 启动入口
-- 需要补可选的 `build.rs` 生成 OpenAPI
 - 需要说明 `cfg.toml` 里 app/db/jwt/security 的基本组织
 
 ### 推荐模板
@@ -481,17 +480,7 @@ async fn main() -> Result<()> {
 }
 ```
 
-#### 7.2 `build.rs`（可选）
-
-```rust
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // 中文备注：在当前 bin crate 构建时生成专属 OpenAPI。
-    kx_openapi_scan::generate(None)?;
-    Ok(())
-}
-```
-
-#### 7.3 `Cargo.toml` 最小依赖
+#### 7.2 `Cargo.toml` 最小依赖
 
 ```toml
 [dependencies]
@@ -500,12 +489,9 @@ kx-axum = { workspace = true }
 clap = { workspace = true }
 kx-biz-xxx = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
-
-[build-dependencies]
-kx-openapi-scan = { version = "0.1", registry = "hekx" }
 ```
 
-#### 7.4 `cfg.toml` 关注点
+#### 7.3 `cfg.toml` 关注点
 
 ```toml
 [app]
@@ -537,7 +523,6 @@ skip_routes = [
 - `main.rs` 负责 Server / Install 子命令切换。
 - 运行入口通常通过 `AppArgs::<SubCmd>::init_def_args()` 读取 cfg 与命令行。
 - `kx_axum::run::<Claims>(app)` 负责真正启动服务。
-- 如果项目需要独立生成 OpenAPI，再额外补 `build.rs` 调用 `kx_openapi_scan::generate(None)`。
 - `cfg.toml` 一般至少包含 app/db_alias/jwt/security 等块。
 ```
 
@@ -580,7 +565,6 @@ impl RoleCtl {
 ```text
 - crud_api! 会自动生成 all/page/save/get/del。
 - 适合基础 CRUD，不适合复杂事务、多表写入、额外校验很多的接口。
-- openapi-scan 已对 crud_api! 做了额外识别处理。
 ```
 
 ---

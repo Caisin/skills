@@ -106,7 +106,6 @@ description: |
 - `bins/`、`bizs/`、`ents/`
 - 实体、控制器、服务、路由、DTO
 - CRUD 落地
-- openapi-scan 与业务控制器兼容
 
 ### 6. SeaORM / #[derive(Sea)] 示例专门问题
 

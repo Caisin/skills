@@ -6,10 +6,9 @@ description: |
   触发场景：
   - 讨论 bins/bizs/ents 的组织与 CRUD 落地
   - 调整 svc/ctl/router/install 的职责分层与装配顺序
-  - 调整 ctl/router 以兼容 openapi-scan
   - 需要判断实践层问题该回看 derives/crates/sdks/tools 的哪里
 
-  触发词：bins、bizs、ents、CRUD、控制器、路由、Service、OpenAPI、openapi-scan、install、实践层
+  触发词：bins、bizs、ents、CRUD、控制器、路由、Service、install、实践层
 ---
 
 # kx-rs
@@ -26,7 +25,6 @@ description: |
 - 新建实践层项目骨架（若是“从零创建新项目”，优先交给 `kx-project-init`）
 - 编写 `bizs/`、`bins/` 的模块组织、装配与路由
 - 规划 `svc/ctl/router/install/dto` 的职责边界
-- 调整 ctl / router / handler 以兼容 `openapi-scan`
 - 实践层写法遇到边界，需要回看 `derives/`、`crates/`、`sdks/`、`tools/`
 
 ### 不适用
@@ -54,7 +52,6 @@ description: |
 | --- | --- | --- |
 | 新建实践层项目 / 模块骨架 | `references/project-skeleton.md` | 目录与安装顺序 |
 | 日常 CRUD、控制器、服务、路由 | `references/crud-workflow.md` | svc/ctl/router/install 的落地顺序与职责边界 |
-| `openapi-scan` 兼容性 | `references/openapi-scan.md` | 控制器/路由写法约束 |
 | 不确定该回看哪个框架目录 | `references/source-navigation.md` | 源码回溯入口 |
 | 明确要 SeaORM 模型 / 迁移 / CRUD / 事务模板 | 直接切 `kx-sea-orm` | 不在 `kx-rs` 里重复展开模板 |
 
@@ -154,8 +151,6 @@ ctl/ 保持薄，只负责参数接收、调用 service、返回统一结果
 
 推荐落点
 - 先看 references/project-skeleton.md 和 references/crud-workflow.md。
-- 如果后续还要兼容 swagger/openapi，再补 references/openapi-scan.md。
-
 操作步骤
 - 先确定 ents/<ds> 放实体与迁移。
 - 再确定 bizs/<biz> 的 svc/ctl/router/install/dto。

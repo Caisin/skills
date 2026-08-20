@@ -36,7 +36,7 @@ description: |
 
 - 纯 Rust 编译器 / trait / 生命周期 / Send / Sync 问题
   - 交给 `rust-router`
-- 重点是 `svc/ctl/router/install`、openapi-scan 兼容或完整实践层分层落地
+- 重点是 `svc/ctl/router/install` 或完整实践层分层落地
   - 交给 `kx-rs`
 - 重点是 `sdks/` 第三方接入
   - 交给 `kx-sdk` / `kx-sdk-aigc`
@@ -90,7 +90,7 @@ description: |
 1. 先判断用户要的是六类示例中的哪几类
 2. 再从 `references/patterns.md` 只摘对应章节
 3. 如果用户问“为什么能这么写”，再补 `references/codegen-map.md`
-4. 若问题已经扩展到完整业务分层、路由或 OpenAPI，再 handoff 到 `kx-rs`
+4. 若问题已经扩展到完整业务分层或路由，再 handoff 到 `kx-rs`
 
 ## 常见错误 vs 正确做法
 

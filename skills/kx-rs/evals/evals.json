@@ -21,18 +21,12 @@
     },
     {
       "id": 4,
-      "prompt": "为什么我的控制器 openapi-scan 扫不到？router 和 handler 应该怎么写？",
-      "expected_output": "归类为 openapi-scan 兼容问题，优先使用 openapi-scan reference，强调同一 impl、Self::method、Router 返回类型、{id} 路径等约定。",
-      "files": []
-    },
-    {
-      "id": 5,
       "prompt": "这个实践层写法的边界我拿不准，应该回看 derives、crates、sdks 还是 tools？",
       "expected_output": "归类为实践层 + 源码回溯问题，优先使用 source-navigation reference，用问题到目录的方式给出回看入口。",
       "files": []
     },
     {
-      "id": 6,
+      "id": 5,
       "prompt": "这个 Rust trait bound 和 Send 错误怎么修？",
       "expected_output": "识别为非 kx-rs 主场景，应明确 handoff 到 rust-router，而不是继续展开实践层模板。",
       "files": []

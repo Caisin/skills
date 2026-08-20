@@ -21,18 +21,12 @@
     },
     {
       "id": 4,
-      "prompt": "这个实践层控制器为什么 openapi-scan 扫不到，我应该回看业务代码还是框架源码？",
-      "expected_output": "识别为实践层 + 框架源码回溯问题，优先 handoff 到 kx-rs，并提示其会结合 openapi-scan 与 source-navigation references 继续处理。",
-      "files": []
-    },
-    {
-      "id": 5,
       "prompt": "这个 Rust trait bound 报错应该用哪个 skill？",
       "expected_output": "识别为 Rust 语言与类型系统问题，明确 handoff 到 rust-router，不继续在入口 skill 中展开。",
       "files": []
     },
     {
-      "id": 6,
+      "id": 5,
       "prompt": "我现在想先拆方案，不急着写代码。",
       "expected_output": "识别为规划型任务，建议切到 brainstorming 或 writing-plans，而不是直接开始实现。",
       "files": []

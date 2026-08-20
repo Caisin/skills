@@ -15,7 +15,6 @@
 ```text
 <workspace>/
 ├── Cargo.toml
-├── build.rs                  # 可选，若根应用生成 openapi
 ├── bins/
 │   └── app/
 │       ├── Cargo.toml
@@ -48,7 +47,7 @@
 1. 先建 `ents/<ds>`，放实体、迁移、索引
 2. 再建 `bizs/<biz>`，放 `svc/ctl/router/install/dto`
 3. 再建 `bins/<app>`，负责装配和运行入口
-4. 最后接 `build.rs` / `openapi-scan` / `cfg.toml`
+4. 最后补 `cfg.toml` 和应用启动装配
 
 ## 依赖方向
 
@@ -92,6 +91,6 @@ bins/* -> bizs/* -> ents/* -> kx
 ```text
 - 先说明这属于下游业务仓库约定，不是当前核心框架仓库既有结构。
 - 推荐先建 ents/<ds>，再建 bizs/<biz>，最后接 bins/<app>。
-- 再补 build.rs / openapi-scan / cfg.toml。
+- 再补 cfg.toml 和应用启动装配。
 - 最后确认依赖方向保持 bins -> bizs -> ents。
 ```

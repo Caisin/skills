@@ -16,7 +16,7 @@
 2. 再确定业务模块 `bizs/<biz>/`
 3. 先写 `svc/`，再写 `ctl/`
 4. 然后写 `router.rs`
-5. 最后补 `install.rs`、装配和 OpenAPI
+5. 最后补 `install.rs` 和应用装配
 
 不要一开始先写 controller，再倒推 service 和 entity。
 
@@ -38,7 +38,7 @@
 ### 3. `router.rs`
 
 - 收口 HTTP 路由
-- 复用同一个 `impl XxxCtl` 下的 handler，便于 `openapi-scan`
+- 复用同一个 `impl XxxCtl` 下的 handler，便于集中维护
 
 ### 4. `install.rs`
 
@@ -59,7 +59,7 @@
 ```text
 ✅ 先把 ents/bizs/bins 和 svc/ctl/router/install 的职责边界说清楚
 ✅ 控制器保持薄，业务逻辑收口到 svc/
-✅ 需要 openapi-scan 时，路由与 handler 保持同一 impl 约定
+✅ 路由与 handler 保持同一 impl 约定
 ✅ 需要实体/迁移/query/update/事务代码模板时，直接使用 kx-sea-orm
 ```
 
@@ -67,8 +67,6 @@
 
 - 要新建 practice 层项目骨架
   - 看 `project-skeleton.md`
-- 路由与 controller 为什么扫不到
-  - 看 `openapi-scan.md`
 - 不确定该去哪个框架目录找源码
   - 看 `source-navigation.md`
 - 明确要 SeaORM 模型 / 迁移 / CRUD / 事务模板
