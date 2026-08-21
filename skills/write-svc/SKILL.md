@@ -5,11 +5,11 @@ description: |
 
   触发场景：
   - 编写 `src/svc/<subdomain>/*.rs`
-  - 使用实体 alias 的 `get/qry/sel/m/upsert/upsert_many`
+  - 使用实体 alias 的 `get/qry/sel/m/update_set/upsert/upsert_many`
   - 设计单库事务、多库 best-effort、幂等、outbox、lease、fencing 或乐观锁
   - 组装多表结果、避免 N+1、维护缓存失效顺序
 
-  触发词：service、svc、事务、查询、CRUD、upsert、幂等、CAS、乐观锁、多表、多数据源、SeaTrans、outbox、lease、fencing
+  触发词：service、svc、事务、查询、CRUD、update_set、upsert、幂等、CAS、乐观锁、多表、多数据源、SeaTrans、outbox、lease、fencing
 ---
 
 # Write Svc
@@ -41,17 +41,18 @@ description: |
 1. svc 负责校验、事务、幂等、多表组装和一致性；ctl 不承担这些职责。
 2. 静态单表查询优先实体 alias 的 `get/get_opt/qry/sel`，不展开完整模块路径。
 3. 分页和批处理补稳定排序；多表列表使用“主表分页 -> 批量从表 -> 内存组装”。
-4. 新建且必须拒绝重复时用 `insert`；完整 Model 按主键允许覆盖时用 `upsert`。
+4. 局部条件更新优先 `Alias::qry().<field>_eq(...).update_set(...)`；新建且必须拒绝重复时用 `insert`；完整 Model 按主键允许覆盖时用 `upsert`。
 5. generated upsert 以主键为冲突目标，不隐式使用自然唯一键。
-6. version、lease、fencing、claim 和状态前置条件使用条件更新，不能用 upsert 绕过。
+6. version、lease、fencing、claim 和状态前置条件使用返回 `UpdateResult` 的底层条件更新，并校验影响行数；当前只返回 `Result<()>` 的 `update_set` 用于不需要 CAS 成功判定的普通局部更新。
 7. 不可变流水、审计、安全事件和账本使用 insert，不做覆盖写。
-8. 同库原子性使用数据库事务；`SeaTrans` 多数据源只提供 best-effort，不宣称跨库原子。
+8. 事务统一使用 `SeaTrans::t`；需要保留领域错误类型时使用 `SeaTrans::sea_trans`。不要在业务示例中手写 `begin/commit/rollback`。单数据源保持数据库原子性，多数据源只提供 best-effort 顺序提交。
 9. 时间统一使用 `kx_tools::times::sys_timestamp()`，不在各模块定义 `now_ts()`。
 
 ## 常见错误 vs 正确做法
 
 ```text
 ❌ 用 upsert 实现 CAS、lease、fencing 或不可变流水
+❌ 在业务 service 中手写 begin/commit/rollback
 ❌ 在循环里逐条查询关联表，或在远端调用期间持有长事务
 ❌ 把 SeaTrans 描述成跨库原子事务
 ✅ svc 明确写入语义、事务边界、幂等和失败行为
@@ -77,7 +78,7 @@ description: |
 
 **Output direction**
 
-- 先检查幂等键，再开启单库事务。
+- 通过 `SeaTrans::t` 获取业务数据源事务并检查幂等键。
 - 用 alias query 稳定排序批次。
-- 用条件更新维护 version，写不可变流水和 outbox。
+- 普通局部字段使用 `update_set`；version 扣减使用可校验影响行数的条件更新，同时写不可变流水和 outbox。
 - 任一步失败回滚；余额不足返回稳定领域错误。

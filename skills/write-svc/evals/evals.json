@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "写一个资产扣减 service：按到期时间消费批次，保证幂等并在同一事务写流水和 outbox。",
-      "expected_output": "应命中 write-svc，把校验、幂等、事务、稳定排序、批次更新、流水和 outbox 放在 svc；静态查询优先使用实体 alias 的 get/qry/sel，CAS 使用条件更新，不用 upsert 绕过并发约束。",
+      "expected_output": "应命中 write-svc，把校验、幂等、事务、稳定排序、批次更新、流水和 outbox 放在 svc；通过 SeaTrans::t 获取 alias 事务，不手写 begin/commit/rollback；静态查询优先使用实体 alias 的 get/qry/sel，CAS 使用可校验影响行数的条件更新，不用 upsert 绕过并发约束。",
       "files": [
         ".agents/skills/write-svc/SKILL.md",
         ".agents/skills/write-svc/references/patterns.md"
@@ -21,7 +21,15 @@
     {
       "id": 3,
       "prompt": "完整 Model 已加载，修改名称后应该 insert、upsert 还是带条件更新？",
-      "expected_output": "应按语义判断：允许按主键覆盖时用 Alias::upsert；新建且必须拒绝重复时用 insert；version/lease/fencing/CAS 使用条件更新。",
+      "expected_output": "应按语义判断：普通局部字段更新优先 Alias::qry().update_set；允许按主键覆盖完整 Model 时用 Alias::upsert；新建且必须拒绝重复时用 insert；version/lease/fencing/CAS 使用可校验影响行数的条件更新。",
+      "files": [
+        ".agents/skills/write-svc/references/patterns.md"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "按用户 id 和 is_del=false 修改名称与更新时间，不想先查完整 Model，应该怎么写？",
+      "expected_output": "应使用 SysUser::qry().id_eq(id).is_del_eq(false).update_set(c, |m| ...)；更新时间调用 kx_tools::times::sys_timestamp()，闭包只设置 name 和 updated_at。",
       "files": [
         ".agents/skills/write-svc/references/patterns.md"
       ]

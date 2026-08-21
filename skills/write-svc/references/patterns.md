@@ -15,13 +15,38 @@ let lots = AstLot::sel()
 
 动态排序、聚合投影、复合 `Condition`、批量更新和 CAS 可以使用底层 SeaORM builder；不要机械替换动态 `Column`。
 
+## Conditional Update With update_set
+
+局部更新不需要先读取完整 Model。通过 alias query 收口更新条件，并在闭包中只设置允许修改的字段：
+
+```rust
+pub async fn rename_user<C: ConnectionTrait>(
+    c: &C,
+    id: i64,
+    name: String,
+) -> Result<()> {
+    let now = kx_tools::times::sys_timestamp();
+    SysUser::qry()
+        .id_eq(id)
+        .is_del_eq(false)
+        .update_set(c, |m| {
+            m.set_name(name.clone()).set_updated_at(now);
+        })
+        .await?;
+    Ok(())
+}
+```
+
+`update_set` 适合按主键、软删状态或其它业务条件做局部字段更新。version/CAS、lease、fencing、claim 等并发控制还必须把预期状态放进条件，并校验影响行数；当前 `update_set` 只返回 `Result<()>` 时，应使用能返回 `UpdateResult` 的底层条件更新完成该校验。
+
 ## Choose Write Semantics
 
 ```text
 insert       -> 新建、数据库生成主键、不可变流水、审计/安全事件
 upsert       -> 完整 Model、主键已知、业务允许覆盖
 upsert_many  -> 多条完整 Model 的主键覆盖写
-条件更新     -> version/CAS、lease、fencing、claim、状态机转换
+update_set   -> 按 alias query 条件局部更新普通业务字段
+底层条件更新 -> 需要校验影响行数的 version/CAS、lease、fencing、claim、状态机转换
 ```
 
 ```rust
@@ -36,29 +61,23 @@ item.upsert(db).await?;
 ## Transaction Shape
 
 ```rust
-let tx = db.begin().await?;
-let result = async {
-    validate(&req)?;
-    let row = write_primary(&tx, &req).await?;
-    write_ledger(&tx, &row).await?;
-    enqueue_outbox(&tx, &row).await?;
-    Ok(row)
-}
-.await;
+use crate::SeaTransExt as _;
+use kx_sea_orm::SeaTrans;
 
-match result {
-    Ok(value) => {
-        tx.commit().await?;
-        Ok(value)
-    }
-    Err(err) => {
-        tx.rollback().await?;
-        Err(err)
-    }
-}
+SeaTrans::t(|trans| {
+    Box::pin(async move {
+        let tx = trans.asset().await?;
+        validate(&req)?;
+        let row = write_primary(tx, &req).await?;
+        write_ledger(tx, &row).await?;
+        enqueue_outbox(tx, &row).await?;
+        Ok(row)
+    })
+})
+.await
 ```
 
-事务必须覆盖所有需要原子提交的数据库写入。远端 SDK 调用通常不放在长事务内，使用 outbox、任务或可重试状态机衔接。
+`SeaTrans::t` 统一处理成功提交和失败回滚；需要让调用方区分领域错误与数据库错误时使用 `SeaTrans::sea_trans`。事务必须覆盖所有需要原子提交的数据库写入。远端 SDK 调用通常不放在长事务内，使用 outbox、任务或可重试状态机衔接。
 
 ## Optimistic Concurrency
 
@@ -95,12 +114,13 @@ kx_sea_orm::ext_db_trait!(asset);
 use crate::SeaOrmExt as _;
 ```
 
-只有真实跨库调用才声明多个 alias。`SeaTrans` 顺序提交多个数据库连接，不提供分布式原子性。
+只有真实跨库调用才声明多个 alias。单 alias 通过 `SeaTrans` 获取的仍是普通数据库事务；多个 alias 按顺序提交，不提供分布式原子性。
 
 ## 常见错误
 
 ```text
 ❌ 先读取 version，再无条件 upsert
+❌ 手写 begin/commit/rollback，重复实现 SeaTrans 的控制流
 ❌ 对不可变流水或审计记录做覆盖写
 ❌ 分页查询没有稳定排序
 ❌ 把外部 SDK 调用放进长数据库事务
@@ -110,6 +130,7 @@ use crate::SeaOrmExt as _;
 
 ```text
 ✅ CAS 和状态机使用带前置条件的更新
+✅ 使用 SeaTrans::t 或 SeaTrans::sea_trans 统一事务控制流
 ✅ 不可变记录使用 insert
 ✅ 分页和批处理提供稳定排序
 ✅ 用 outbox 或可重试任务衔接外部副作用
