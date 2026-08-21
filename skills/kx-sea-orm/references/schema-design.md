@@ -93,7 +93,9 @@ pub async fn migrate<C: SchemaSyncConnection>(c: &C) -> Result<()> {
 - relation 只用于 JOIN、loader 和 Seaography；关联存在性继续由 service 校验，数据库不创建外键。
 - 普通业务表优先单整数主键；只有在关系表、桥表、天然联合唯一键场景下，才考虑联合主键。
 - 单字段索引优先直接使用 `#[sea_orm(indexed)]`。
-- 联合索引名字不要太长，普通索引以 `idx_` 开头，唯一索引以 `udx_` 开头。
+- 联合唯一索引让相关字段共享同一 `#[sea_orm(unique_key = "...")]`，由官方 sync 创建。
+- dense entity 当前不能用字段属性表达联合普通索引；在 `install.rs` 显式创建，索引名以
+  `idx_` 开头。字段需要参与多个联合唯一分组时，额外分组同样显式创建。
 ```
 
 ## 常见错误

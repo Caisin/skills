@@ -11,6 +11,8 @@
 - `insert_many` 新语义：空输入和 `last_insert_id: Option<_>` 不再依赖易 panic 的旧流程。
 - `#[sea_orm::model]`：使用 dense entity，并生成 `ModelEx`、`ActiveModelEx` 和 relation 元数据。
 - `SchemaBuilder::sync`：补齐缺失表、列和索引；KX 的 `auto_migrate` 直接使用该实验 API。
+- `SchemaCommentSyncExt`：按同一 entity registry prefix 调用官方 sync，并补充 PostgreSQL
+  表/字段备注同步；不复制上游 Schema diff。
 - `DeriveIntoActiveModel`：KX 的 `ModifyModel` 直接派生 DTO 到 ActiveModel 的转换。
 - async transaction helper、连接池 `before_acquire` hook、`Paginator::set_page`。
 - `date_time_default_now`、`timestamp_default_now`、`timestamp_with_time_zone_default_now` Schema helper。
@@ -24,6 +26,11 @@
 - 不为每个上游 helper 增加一层同名 KX wrapper；能稳定重导出的 API 直接使用。
 - KX 冲突更新使用 `upsert` / `upsert_many`，不遮蔽 SeaORM 原生 `ActiveModelTrait::save`。
 - schema sync 只新增缺失对象；类型修改、约束调整和删除继续使用显式 migration。
+- schema sync 可从 entity 属性创建单列普通索引、单列唯一索引和 `unique_key` 联合唯一
+  索引；dense entity 当前不能表达联合普通索引，同一字段也不能属于多个 `unique_key`
+  分组，这两类缺口由业务 `install.rs` 显式补齐。
+- PostgreSQL 备注由 KX comment registry 在官方 sync 后补齐；MySQL 新建对象沿用上游
+  DDL，SQLite 不持久化表和字段备注。
 - PostgreSQL schema 与时区通过 `ConnectOptions` 配置，不自行构造 SQLx pool。
 
 ## 常见错误

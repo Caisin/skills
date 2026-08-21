@@ -19,7 +19,7 @@ pub async fn create_user_with_dept_check(name: String, mobile: String, dept_id: 
         .transaction(|tx| {
             Box::pin(async move {
                 let c = tx.sys().await?;
-                let now = kx_tools::times::sys_time_ts();
+                let now = kx_tools::times::sys_timestamp();
                 SysDept::qry().id_eq(dept_id).is_del_eq(false).one(c).await?;
 
                 let mut m = SysUser::m();
@@ -38,13 +38,25 @@ pub async fn create_user_with_dept_check(name: String, mobile: String, dept_id: 
 
 ### 多数据源
 
+业务 crate 自己声明固定数据源快捷入口，不把业务 alias 追加到 `kx-sea-orm` 的全局列表：
+
+```rust
+kx_sea_orm::ext_db_trait!(asset);
+
+// 在实际调用 SeaOrms::asset() / SeaTrans::asset() 的子模块中引入 trait。
+use crate::{SeaOrmExt as _, SeaTransExt as _};
+```
+
+只有真实跨库调用才在调用方声明多个 alias，例如通知运行器需要访问任务库时使用
+`ext_db_trait!(notify, task)`。没有调用事务 alias 的模块不导入 `SeaTransExt`。
+
 ```rust
 pub async fn create_user_and_log(name: String, mobile: String, dept_id: i64, uid: i64) -> Result<()> {
     SeaTrans::new()
         .transaction(|tx| {
             Box::pin(async move {
                 let [base, log] = tx.get_dbs(["base", "log"]).await?;
-                let now = kx_tools::times::sys_time_ts();
+                let now = kx_tools::times::sys_timestamp();
 
                 let mut user = SysUser::m();
                 user.set_name(name.clone())
@@ -110,6 +122,7 @@ pub async fn page_users_with_dept<C: ConnectionTrait>(c: &C, paging: Paging) -> 
 - 多表读优先两段式：主表 -> 收集 IDs -> 批量查从表 -> 内存组装。
 - 单库多表写可用 SeaTrans 收口并保持数据库事务原子性。
 - 多库写仅是按顺序提交的 best-effort 协调，不保证跨库原子性；业务必须设计补偿或幂等重试。
+- 业务数据源 alias 由对应业务 crate 使用 `ext_db_trait!` 声明，不进入框架全局 inherent 方法列表。
 - relation 只提供查询元数据，不影响一致性边界；一致性由 service 顺序与事务保证。
 - 列表分页和复杂组合读取仍优先两段式批量查询；明确的类型化 JOIN、loader 和 Seaography 可使用 relation。
 ```

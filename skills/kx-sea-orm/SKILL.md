@@ -25,7 +25,7 @@ description: |
 ### 适用
 
 - 需要写 `#[sea_orm::model]` + `model_attrs(derive(Sea))` 模型定义示例
-- 需要写 `prelude::migrate()` / `auto_migrate()` 风格迁移示例
+- 需要写业务 `XxxInstall::migrate()/migrate_with()` 或实体 `auto_migrate()` 迁移示例
 - 需要写标准新增、查询、分页、更新、软删除示例
 - 需要写 `SeaTrans` 单库或多库事务示例
 - 需要写多数据源联动示例
@@ -70,10 +70,21 @@ description: |
    - 简单筛选优先 `<T>::sel()`
    - 复杂条件 / 排序 / 分页 / 批量更新优先 `<T>::qry()`
    - 更新构造优先 `<T>::m()` 或 `update_set(...)`
+   - 业务代码通过实体 alias 调用这些方法，不展开为 `module::Entity::find()`；生成器内部的
+     静态字段访问使用 SeaORM 2 `COLUMN.<field>`。
+   - 聚合投影、运行时字段排序、复合 `Condition`、索引和 CAS 等底层场景可保留直接
+     SeaORM builder；不要机械替换动态 `Column` 枚举。
 4. **软删表默认过滤 `is_del_eq(false)`**
    - 分页默认补稳定排序；如果没有显式排序，优先 `desc_id()`。
 5. **迁移优先使用模型自带 `auto_migrate()` / `create_index()` 能力**
    - `auto_migrate()` 使用实验性的 `SchemaBuilder::sync`，只新增缺失对象，不修改或删除已有对象。
+   - crate 级 entity registry 使用 `SchemaCommentSyncExt::sync_schema_with_comments()`，在官方
+     `sync()` 后按同一 prefix 补齐 PostgreSQL 表和字段备注，不再逐表调用备注 helper。
+   - 业务 crate 的迁移入口只放在 `install.rs`，由 `XxxInstall::migrate()` 获取业务数据源，
+     `migrate_with()` 接收既有连接；不要再创建 `entity/prelude.rs` 重复迁移职责。
+   - 单列普通索引用 `indexed`，单列唯一索引用 `unique`，联合唯一索引让多列共享同一
+     `unique_key`；这些索引由官方 sync 创建。dense entity 当前不能表达联合普通索引，
+     这类索引继续在 `install.rs` 显式创建。
    - 迁移连接需满足 `SchemaSyncConnection`；破坏性变更继续使用显式 migration。
 6. **字段命名尽量短而稳定**
    - 不要把字段名设计得过长；例如优先 `uid`，不要默认写成 `user_id`。
@@ -92,8 +103,15 @@ description: |
 12. **当前稳定基线是 SeaORM 2.0.2**
    - 可直接使用 `require_one`、`raw_sql!`、嵌套 partial model、时间默认值 helper 等上游 API。
    - KX 冲突更新使用 `upsert` / `upsert_many`；`ActiveModelTrait::save` 保留 SeaORM 原生 insert/update 语义。
-   - `ModifyModel` 通过 `DeriveIntoActiveModel` 转换；未设置字段为 `NotSet`。
+   - `ModifyModel` 由 KX 生成显式 `IntoActiveModel` 转换；未设置字段为 `NotSet`。
    - relation 必须与数据库外键解耦；`belongs_to` 使用 `skip_fk`，关联一致性继续由 service + 事务保证。
+13. **按写入语义选择 `insert`、`upsert` 或条件更新**
+   - 完整 `Model`、主键已知且业务允许覆盖时优先 `Alias::upsert`；批量覆盖使用
+     `Alias::upsert_many`。
+   - generated upsert 以主键为冲突目标，不把自然唯一键当作隐式冲突目标。
+   - 创建时必须拒绝重复、数据库生成主键、不可变流水、审计/安全事件继续使用 `insert`。
+   - version CAS、lease、fencing、claim 和依赖数据库状态前置条件的转换使用
+     `update_many` / `update_set`，不能用 upsert 绕过并发约束。
 
 ## 推荐回答顺序
 
