@@ -33,6 +33,15 @@
       "files": [
         ".agents/skills/write-svc/references/patterns.md"
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "创建 TaskRun 时十几个 Option 字段都是 None、计数都是 0，是否可以全部省略？",
+      "expected_output": "实体已经实现 Default 且这些值具有稳定初始语义时，应使用 ..Default::default() 省略重复 None/0/false；status、时间、版本、权限、租约等改变业务语义的字段仍显式赋值，不能为了简写给必填请求 DTO 静默补默认值。",
+      "files": [
+        ".agents/skills/write-svc/SKILL.md",
+        ".agents/skills/write-svc/references/patterns.md"
+      ]
     }
   ]
 }

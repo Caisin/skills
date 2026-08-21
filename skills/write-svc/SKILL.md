@@ -47,6 +47,7 @@ description: |
 7. 不可变流水、审计、安全事件和账本使用 insert，不做覆盖写。
 8. 事务统一使用 `SeaTrans::t`；需要保留领域错误类型时使用 `SeaTrans::sea_trans`。不要在业务示例中手写 `begin/commit/rollback`。单数据源保持数据库原子性，多数据源只提供 best-effort 顺序提交。
 9. 时间统一使用 `kx_tools::times::sys_timestamp()`，不在各模块定义 `now_ts()`。
+10. 实体已实现 `Default` 且 `None/0/false` 确实是稳定缺省值时，构造使用 `..Default::default()`；状态、时间、版本、权限等业务关键字段仍显式赋值，不为必填 DTO 静默补默认值。
 
 ## 常见错误 vs 正确做法
 
@@ -55,7 +56,9 @@ description: |
 ❌ 在业务 service 中手写 begin/commit/rollback
 ❌ 在循环里逐条查询关联表，或在远端调用期间持有长事务
 ❌ 把 SeaTrans 描述成跨库原子事务
+❌ 为了少写字段给必填 DTO 实现 Default，掩盖缺失输入
 ✅ svc 明确写入语义、事务边界、幂等和失败行为
+✅ 只对稳定缺省字段使用 `..Default::default()`，关键业务字段保持显式
 ```
 
 ## 输出模板

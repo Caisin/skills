@@ -5,8 +5,10 @@
 ```rust
 use kx_axum::{
     ApiMeta, ApiRouter, AxumErr, R,
-    axum::{Json, extract::{Path, Query}},
+    axum::{Json, extract::Path},
+    ext::QsQuery,
 };
+use kx_sea_common::Paging;
 
 pub struct ItemCtl;
 
@@ -19,8 +21,11 @@ impl ItemCtl {
             .delete("/{id}", Self::delete, ApiMeta::new("item.delete", "删除项目"))
     }
 
-    pub async fn page(Query(req): Query<ItemPageQuery>) -> Result<R<ItemPage>, AxumErr> {
-        Ok(ItemSvc::page(req).await?.into())
+    pub async fn page(
+        QsQuery(req): QsQuery<ItemQuery>,
+        QsQuery(page): QsQuery<Paging>,
+    ) -> Result<R<ItemPage>, AxumErr> {
+        Ok(ItemSvc::page(req, page).await?.into())
     }
 
     pub async fn detail(Path(id): Path<i64>) -> Result<R<ItemView>, AxumErr> {
@@ -38,6 +43,11 @@ impl ItemCtl {
 ```
 
 handler 中不直接访问 `SeaOrms`、不 begin transaction、不逐表写入。
+
+分页条件与分页参数必须分离：`ItemQuery` 只定义业务过滤条件，`Paging` 统一承载
+`page/page_size/pageSize/size`。不要在每个查询 DTO 中重复定义分页字段或 `paging()`。两个
+`QsQuery` 会分别解析完整 query string，因此分页查询 DTO 不要标记
+`#[serde(deny_unknown_fields)]`，否则业务条件 extractor 会拒绝分页字段。
 
 ## Router Aggregation
 
@@ -75,6 +85,7 @@ impl ItemRouter {
 - 响应 View 不返回密码哈希、token、credential 密文、内部 claim token 或 provider secret。
 - `entity::Model` 只在确认所有字段都可公开时直接返回；默认显式映射为 View。
 - 分页 query、write request、detail view 分开定义，避免一个 DTO 同时承担多种协议语义。
+- 分页 handler 使用两个 `QsQuery`：一个提取业务查询条件，一个提取 `Paging`。
 
 ## Directory Boundary
 
@@ -90,6 +101,7 @@ src/ctl/mod.rs          -> 模块声明和稳定重导出
 ```text
 ❌ handler 直接访问 SeaOrms 或开启事务
 ❌ 请求 DTO 复用完整 entity，允许调用方写内部字段
+❌ 使用 Axum 原生 `Query` 解析复杂查询，或把 `page/page_size/size` 重复塞进业务查询 DTO
 ❌ 使用 Axum 0.7 的 /:id 路径语法
 ❌ 第三方回调只标 public，没有 ingress 和 plaintext 策略
 ```
@@ -99,6 +111,7 @@ src/ctl/mod.rs          -> 模块声明和稳定重导出
 ```text
 ✅ handler 只提取参数、调用 svc 和转换响应
 ✅ 请求与响应使用最小 DTO/View
+✅ 分页使用 `QsQuery(req): QsQuery<XxxQuery>` 和 `QsQuery(page): QsQuery<Paging>`
 ✅ 路径参数使用 Axum 0.8 的 {id} 语法
 ✅ 第三方回调显式登记 external_callback、ingress 和 plaintext
 ```

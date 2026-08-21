@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "给参数模块写分页、详情、保存、删除接口，使用 ApiRouter 和 ApiMeta。",
-      "expected_output": "应命中 write-ctl，DTO 与 handler 按功能拆文件；ctl 只提取 Query/Path/Json、调用 svc、返回 R<T>；ApiRouter 显式登记 method/path/API code/summary 和安全策略。",
+      "expected_output": "应命中 write-ctl，DTO 与 handler 按功能拆文件；分页 handler 分别用 QsQuery<查询条件> 和 QsQuery<Paging>，查询 DTO 不重复定义 page/page_size/size；ctl 只调用 svc 并返回 R<T>；ApiRouter 显式登记 method/path/API code/summary 和安全策略。",
       "files": [
         ".agents/skills/write-ctl/SKILL.md",
         ".agents/skills/write-ctl/references/patterns.md"
@@ -23,6 +23,15 @@
       "prompt": "新增一个第三方回调路由，需要明文 body 但必须经过 ingress 验证。",
       "expected_output": "应使用 ApiMeta 的 external_callback/明文策略并要求 ingress，不能用裸 Router 绕过 catalog。",
       "files": [
+        ".agents/skills/write-ctl/references/patterns.md"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "分页查询的过滤条件比较复杂，同时还要支持统一的 page 和 size 参数。",
+      "expected_output": "handler 应分别提取 QsQuery<XxxQuery> 与 QsQuery<Paging>，service 显式接收 Paging；XxxQuery 只保留业务过滤条件，不定义 page、page_size、size 或 paging()，且不能使用 deny_unknown_fields 拒绝另一 extractor 的参数。",
+      "files": [
+        ".agents/skills/write-ctl/SKILL.md",
         ".agents/skills/write-ctl/references/patterns.md"
       ]
     }

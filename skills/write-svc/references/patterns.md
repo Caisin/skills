@@ -58,6 +58,25 @@ item.upsert(db).await?;
 
 自然唯一键不是 generated upsert 的冲突目标。需要按自然键创建时，先按业务语义选择拒绝重复，或显式构造 `OnConflict`。
 
+## Default Model Fields
+
+实体已 `derive(Default)`，且可选字段的 `None`、计数的 `0`、开关的 `false` 就是统一初始状态时，省略重复初始化：
+
+```rust
+let run = TaskRun {
+    run_key,
+    executor_code,
+    status: TaskRunStatus::Queued,
+    scheduled_at: now,
+    queued_at: now,
+    updated_at: now,
+    message: "任务已进入队列".to_owned(),
+    ..Default::default()
+};
+```
+
+状态、时间、版本、租约、权限、审计主体和其它会改变业务语义的字段保持显式。请求 DTO 的必填字段不能通过 `Default` 掩盖缺失输入；SeaORM `ActiveModel` 只用 `..Default::default()` 表达剩余字段 `NotSet`。
+
 ## Transaction Shape
 
 ```rust
