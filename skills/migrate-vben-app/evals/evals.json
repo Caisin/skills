@@ -1,0 +1,58 @@
+{
+  "skill_name": "migrate-vben-app",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "旧后台页面还在调用 modalApi.getData<User>()，新版 Vben 类型不通过，直接给框架 API 加一个泛型重载吧。",
+      "expected_output": "应命中 migrate-vben-app，并拒绝为旧页面修改框架兼容层；改为在 useVbenModal<User> 创建处声明类型，调用无泛型 getData()，并显式处理 undefined。",
+      "files": [
+        ".agents/skills/migrate-vben-app/SKILL.md",
+        ".agents/skills/migrate-vben-app/references/patterns.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "把旧管理端的商品模块迁到 Vben apps/mall，怎么确保 API、权限和资源选项没有漏？",
+      "expected_output": "应从路由/pageMap 建立页面到 import、API、权限、资源选项、上传和共享组件的闭包清单；按业务域迁移并使用 verification checklist 逐项验收，不能把 build 成功当作业务完整。",
+      "files": [
+        ".agents/skills/migrate-vben-app/references/patterns.md",
+        ".agents/skills/migrate-vben-app/references/verification-checklist.md"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "父仓已经用 web 子模块挂了 Vben，我准备再在父仓根目录建 apps/admin，方便和后端放一起。",
+      "expected_output": "应指出 apps 属于 Vben 子模块内部，业务 app 应放 web/apps/<product>；父仓只维护 .gitmodules、web gitlink 和父仓文档，避免双重应用目录。",
+      "files": [
+        ".agents/skills/migrate-vben-app/SKILL.md",
+        ".agents/skills/migrate-vben-app/references/patterns.md"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "新迁入的 app 出现 VNode 和 Router 类型互不兼容，lockfile 里同时有两个 Vue patch 版本。",
+      "expected_output": "应检查 pnpm catalog、pnpm why、workspace override 和 lockfile，使 Vue 与 @vue/compiler-sfc 保持同版本单例；不能用 any、skipLibCheck 或复制类型掩盖分裂。",
+      "files": [
+        ".agents/skills/migrate-vben-app/references/patterns.md",
+        ".agents/skills/migrate-vben-app/references/verification-checklist.md"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "自有后台 app 已提交到 Vben fork，现在要给官方修一个通用组件 bug，分支应该怎么建？",
+      "expected_output": "应从干净的 upstream/main 新建官方 PR 分支，只包含独立通用修复；自有 apps/<product> 和产品配置留在 fork，不能进入官方 PR。",
+      "files": [
+        ".agents/skills/migrate-vben-app/SKILL.md",
+        ".agents/skills/migrate-vben-app/references/patterns.md"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "给 Rust SeaORM service 增加 upsert 和 SeaTrans 事务。",
+      "expected_output": "不应命中 migrate-vben-app；这是后端 service 场景，应 handoff 到 write-svc。",
+      "files": [
+        ".agents/skills/migrate-vben-app/SKILL.md"
+      ]
+    }
+  ]
+}
