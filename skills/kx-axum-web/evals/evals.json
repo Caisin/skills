@@ -18,6 +18,16 @@
       "files": [
         ".agents/skills/kx-axum-web/SKILL.md"
       ]
+    },
+    {
+      "id": 3,
+      "prompt": "给登录、用户分页和微信支付回调写一组 kx-axum 路由，并生成权限目录。",
+      "expected_output": "应使用 ApiRouter 和稳定 ApiMeta code；用户分页保持默认 Protected + Required，登录只 public 不自动 plaintext，支付回调使用 external_callback，并在聚合后调用 finish 取得 ApiCatalog。",
+      "files": [
+        ".agents/skills/kx-axum-web/SKILL.md",
+        ".agents/skills/kx-axum-web/references/patterns.md",
+        ".agents/skills/kx-axum-web/references/kx-axum-map.md"
+      ]
     }
   ]
 }

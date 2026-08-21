@@ -18,8 +18,8 @@ Result<R<T>, AxumErr>
 3. `ctl/` 负责收参与返回；复杂事务、多表拼装、关联写入优先下沉到 `svc/`。
 4. `router.rs` 负责 `nest()` 路由聚合；`install.rs` 负责迁移或初始化。
 5. 默认先给单工程 / 单 crate 模板，只有大型工程再拆 `bins/* + bizs/* + ents/*`。
-6. `bins/*` 负责 server / install 子命令与 `kx_axum::run(...)` 启动。
-7. 如果只是简单 CRUD，可优先考虑 `crud_api!`。
+6. `bins/*` 负责 server / install 子命令、`finish()` 校验与 `run_registered(...)` 启动。
+7. `crud_api!` 已删除；CRUD handler 显式声明，路由统一附带稳定 code 和安全策略。
 
 ---
 
@@ -56,7 +56,7 @@ my-app/
 // src/main.rs
 use anyhow::Result;
 use clap::Parser;
-use kx_axum::{axum::Router, cfg::AppArgs, jwt::AdmClaims};
+use kx_axum::{cfg::AppArgs, jwt::AdmClaims};
 
 mod ctl;
 mod ents;
@@ -70,20 +70,20 @@ enum SubCmd {
 #[tokio::main]
 async fn main() -> Result<()> {
     let _arg = AppArgs::<SubCmd>::init_def_args().await?;
-    let app: Router = router::apis();
-    kx_axum::run::<AdmClaims>(app).await?;
+    let app = router::apis().finish()?;
+    kx_axum::run_registered::<AdmClaims>(app).await?;
     Ok(())
 }
 ```
 
 ```rust
 // src/router.rs
-use kx_axum::axum::Router;
+use kx_axum::ApiRouter;
 
 use crate::ctl::user::UserCtl;
 
-pub fn apis() -> Router {
-    Router::new().nest("/user", UserCtl::apis())
+pub fn apis() -> ApiRouter {
+    ApiRouter::new().nest("/user", UserCtl::apis())
 }
 ```
 
@@ -176,11 +176,7 @@ pub use kx_ents_xxx as ents;
 
 ```rust
 use kx_axum::{
-    AxumErr, Json, R,
-    axum::{
-        Router,
-        routing::{get, post},
-    },
+    ApiMeta, ApiRouter, AxumErr, Json, R,
     ext::QsQuery,
 };
 use kx_ents_xxx::foo::{Foo, FooModify, FooQry};
@@ -193,11 +189,11 @@ use kx_tools::times;
 pub struct AdmFooCtl;
 
 impl AdmFooCtl {
-    pub fn apis() -> Router {
-        Router::new()
-            .route("/", get(Self::page))
-            .route("/", post(Self::save))
-            .route("/list", get(Self::list))
+    pub fn apis() -> ApiRouter {
+        ApiRouter::new()
+            .get("/", Self::page, ApiMeta::new("foo.page", "Foo 分页"))
+            .post("/", Self::save, ApiMeta::new("foo.save", "保存 Foo"))
+            .get("/list", Self::list, ApiMeta::new("foo.list", "Foo 列表"))
     }
 
     async fn list() -> Result<R<Vec<Foo>>, AxumErr> {
@@ -254,11 +250,7 @@ impl AdmFooCtl {
 
 ```rust
 use kx_axum::{
-    AxumErr, Json, R,
-    axum::{
-        Router,
-        routing::{get, post},
-    },
+    ApiMeta, ApiRouter, AxumErr, Json, R,
     ext::QsQuery,
 };
 use kx_ents_xxx::foo::{Foo, FooModify, FooQry};
@@ -269,11 +261,11 @@ use crate::svc::foo_svc::FooSvc;
 pub struct AdmFooCtl;
 
 impl AdmFooCtl {
-    pub fn apis() -> Router {
-        Router::new()
-            .route("/", get(Self::page))
-            .route("/", post(Self::save))
-            .route("/list", get(Self::list))
+    pub fn apis() -> ApiRouter {
+        ApiRouter::new()
+            .get("/", Self::page, ApiMeta::new("foo.page", "Foo 分页"))
+            .post("/", Self::save, ApiMeta::new("foo.save", "保存 Foo"))
+            .get("/list", Self::list, ApiMeta::new("foo.list", "Foo 列表"))
     }
 
     async fn list() -> Result<R<Vec<Foo>>, AxumErr> {
@@ -316,11 +308,7 @@ impl AdmFooCtl {
 
 ```rust
 use kx_axum::{
-    AxumErr, Json, R,
-    axum::{
-        Router,
-        routing::post,
-    },
+    ApiMeta, ApiRouter, AxumErr, Json, R,
 };
 use kx_sea_orm::SeaTrans;
 use serde_json::Value;
@@ -328,8 +316,12 @@ use serde_json::Value;
 pub struct AdmFooCtl;
 
 impl AdmFooCtl {
-    pub fn apis() -> Router {
-        Router::new().route("/", post(Self::save))
+    pub fn apis() -> ApiRouter {
+        ApiRouter::new().post(
+            "/",
+            Self::save,
+            ApiMeta::new("foo.save", "保存 Foo"),
+        )
     }
 
     async fn save(Json(data): Json<Value>) -> Result<R<()>, AxumErr> {
@@ -373,21 +365,21 @@ impl AdmFooCtl {
 这个模式直接来自 `bizs/asset/src/router.rs`：
 
 ```rust
-use kx_axum::axum::Router;
+use kx_axum::ApiRouter;
 
 use crate::ctl::adm::{foo::AdmFooCtl, bar::AdmBarCtl};
 
 pub struct XxxRouter;
 
 impl XxxRouter {
-    pub fn adm_apis() -> Router {
-        Router::new()
+    pub fn adm_apis() -> ApiRouter {
+        ApiRouter::new()
             .nest("/foo", AdmFooCtl::apis())
             .nest("/bar", AdmBarCtl::apis())
     }
 
-    pub fn app_router() -> Router {
-        Router::new()
+    pub fn app_router() -> ApiRouter {
+        ApiRouter::new()
     }
 }
 ```
@@ -470,7 +462,7 @@ async fn main() -> Result<()> {
         SubCmd::Server => {
             let app = XxxRouter::apis();
             let app = app.nest("/app", XxxRouter::app_apis());
-            kx_axum::run::<AdmClaims>(app).await?;
+            kx_axum::run_registered::<AdmClaims>(app.finish()?).await?;
         }
         SubCmd::Install => {
             XxxInstall::migrate().await?;
@@ -510,11 +502,6 @@ secret = "..."
 jwt_exp = 7200
 refresh_exp = 604800
 
-[security]
-enable = false
-skip_routes = [
-  "/auth/dt/callback/{app_id}"
-]
 ```
 
 ### 关键点
@@ -522,49 +509,10 @@ skip_routes = [
 ```text
 - `main.rs` 负责 Server / Install 子命令切换。
 - 运行入口通常通过 `AppArgs::<SubCmd>::init_def_args()` 读取 cfg 与命令行。
-- `kx_axum::run::<Claims>(app)` 负责真正启动服务。
-- `cfg.toml` 一般至少包含 app/db_alias/jwt/security 等块。
-```
-
----
-
-## 8. `crud_api!` 模板
-
-### 适用场景
-
-- 纯 page/get/save/del
-- 基本不加业务逻辑
-
-### 推荐模板
-
-这个模式可参考 `bizs/auth/src/ctl/system/user.rs`、`role.rs`、`permission.rs`：
-
-```rust
-use kx_axum::{
-    axum::Router,
-    axum::routing::{delete, get, post},
-    crud_api,
-};
-use kx_ents_auth::entity::kx_role::{self, KxRole};
-
-crud_api!(kx_role, RoleCtl, "auth");
-
-impl RoleCtl {
-    pub fn apis() -> Router {
-        Router::new()
-            .route("/", get(Self::page))
-            .route("/", post(Self::save))
-            .route("/{id}", get(Self::get))
-            .route("/{id}", delete(Self::del))
-    }
-}
-```
-
-### 关键点
-
-```text
-- crud_api! 会自动生成 all/page/save/get/del。
-- 适合基础 CRUD，不适合复杂事务、多表写入、额外校验很多的接口。
+- `kx_axum::run_registered::<Claims>(app.finish()?)` 负责校验 catalog 并启动服务。
+- 注册式路由的公开和 KxEd 策略只来自 `ApiMeta`；`security` 与 routes 白名单仅服务旧 `run(Router)`。
+- 启用 `disable_kx_ed_for_debug()` 前必须通过 `args.set_listen_host("127.0.0.1")` 显式监听 loopback；不能在默认 `0.0.0.0` 上关闭 KxEd。
+- `cfg.toml` 一般至少包含 app/db_alias/jwt 等块。
 ```
 
 ---
@@ -572,8 +520,8 @@ impl RoleCtl {
 ## 常见错误
 
 ```text
-❌ 明明只是简单 CRUD，还手写一整套重复 handler
-❌ 明明有复杂事务，却还硬塞进 crud_api!
+❌ 返回原生 Router，再到 TOML 和数据库分别维护公开策略与 API 记录
+❌ 复用已删除的 crud_api!，隐藏 handler 的请求、响应和权限 code
 ❌ save/page 接口不接 *ModifyModel / *Qry，重复手写 web DTO
 ❌ ctl/ 里直接堆复杂事务和多表逻辑
 ❌ install.rs、router.rs、ctl/、bins/main.rs 职责混在一起
@@ -584,11 +532,11 @@ impl RoleCtl {
 ## 正确做法
 
 ```text
-✅ 简单 CRUD 优先评估 crud_api!
+✅ CRUD handler 显式声明，并通过 ApiRouter + ApiMeta 注册稳定 code
 ✅ 标准 page/save/list 优先接 *Qry / *ModifyModel
 ✅ 复杂写入优先 ctl + svc + SeaTrans
 ✅ router.rs 统一收口 nest()，install.rs 只做安装入口
 ✅ 小型工程优先用单工程 / 单 crate 模板
-✅ bins/main.rs 只负责子命令分流、装配 app 与调用 kx_axum::run(...)
+✅ bins/main.rs 只负责子命令分流、装配 app、finish 校验与调用 run_registered(...)
 ✅ web 层专注接口形状，实体/迁移模板继续参考 kx-sea-orm
 ```

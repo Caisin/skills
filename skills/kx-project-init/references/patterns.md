@@ -140,11 +140,7 @@ impl AppInstall {
 ```rust
 // src/ctl/user.rs
 use kx_axum::{
-    AxumErr, Json, R,
-    axum::{
-        Router,
-        routing::{get, post},
-    },
+    ApiMeta, ApiRouter, AxumErr, Json, R,
     ext::QsQuery,
 };
 use kx_sea_orm::{SeaOrms, common::{Page, Paging}};
@@ -154,10 +150,10 @@ use kx_tools::times;
 pub struct UserCtl;
 
 impl UserCtl {
-    pub fn apis() -> Router {
-        Router::new()
-            .route("/", get(Self::page))
-            .route("/", post(Self::save))
+    pub fn apis() -> ApiRouter {
+        ApiRouter::new()
+            .get("/", Self::page, ApiMeta::new("user.page", "用户分页"))
+            .post("/", Self::save, ApiMeta::new("user.save", "保存用户"))
     }
 
     async fn page(
@@ -189,7 +185,7 @@ impl UserCtl {
 ```rust
 use anyhow::Result;
 use clap::Parser;
-use kx_axum::{axum::Router, cfg::AppArgs, jwt::AdmClaims};
+use kx_axum::{cfg::AppArgs, jwt::AdmClaims};
 
 mod ctl;
 mod ents;
@@ -207,8 +203,8 @@ async fn main() -> Result<()> {
     let arg = AppArgs::<SubCmd>::init_def_args().await?;
     match &arg.sub {
         SubCmd::Server => {
-            let app: Router = router::apis();
-            kx_axum::run::<AdmClaims>(app).await?;
+            let app = router::apis().finish()?;
+            kx_axum::run_registered::<AdmClaims>(app).await?;
         }
         SubCmd::Install => {
             crate::install::AppInstall::install().await?;
