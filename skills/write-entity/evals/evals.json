@@ -1,0 +1,30 @@
+{
+  "skill_name": "write-entity",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "给 asset 增加一张 SeaORM 2 dense entity，带表字段备注、联合唯一索引和迁移入口。",
+      "expected_output": "应命中 write-entity，使用 #[sea_orm::model] + model_attrs(derive(Sea))，通过 comment 写表字段备注，通过同名 unique_key 表达联合唯一索引，并把 schema sync 放在 install.rs 的 XxxInstall::migrate_with()。",
+      "files": [
+        ".agents/skills/write-entity/SKILL.md",
+        ".agents/skills/write-entity/references/patterns.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "这个扣减流程要在事务里更新批次、写流水并发 outbox，service 怎么写？",
+      "expected_output": "不应在 write-entity 展开业务事务；应 handoff 到 write-svc，entity 只负责模型、Schema 和索引。",
+      "files": [
+        ".agents/skills/write-entity/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "SeaORM 2 sync 能否创建联合普通索引？",
+      "expected_output": "应说明 indexed/unique/unique_key 分别覆盖单列普通、单列唯一和联合唯一索引；dense entity 当前不能表达联合普通索引，需在 install.rs 显式创建。",
+      "files": [
+        ".agents/skills/write-entity/references/patterns.md"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "skill_name": "write-svc",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "写一个资产扣减 service：按到期时间消费批次，保证幂等并在同一事务写流水和 outbox。",
+      "expected_output": "应命中 write-svc，把校验、幂等、事务、稳定排序、批次更新、流水和 outbox 放在 svc；静态查询优先使用实体 alias 的 get/qry/sel，CAS 使用条件更新，不用 upsert 绕过并发约束。",
+      "files": [
+        ".agents/skills/write-svc/SKILL.md",
+        ".agents/skills/write-svc/references/patterns.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "给这个字段加 SeaORM comment 和 unique_key，schema sync 时创建索引。",
+      "expected_output": "不应在 write-svc 处理 entity 属性和 Schema；应 handoff 到 write-entity。",
+      "files": [
+        ".agents/skills/write-svc/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "完整 Model 已加载，修改名称后应该 insert、upsert 还是带条件更新？",
+      "expected_output": "应按语义判断：允许按主键覆盖时用 Alias::upsert；新建且必须拒绝重复时用 insert；version/lease/fencing/CAS 使用条件更新。",
+      "files": [
+        ".agents/skills/write-svc/references/patterns.md"
+      ]
+    }
+  ]
+}

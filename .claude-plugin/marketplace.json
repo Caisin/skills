@@ -6,113 +6,67 @@
   "plugins": [
     {
       "name": "kx-entry",
-      "description": "kx 仓库任务入口与路由 skill",
-      "version": "1.1.0",
+      "description": "kx 仓库任务入口与技能路由",
+      "version": "2.0.0",
       "source": "./",
       "strict": false,
-      "skills": [
-        "./skills/kx-entry"
-      ]
+      "skills": ["./skills/kx-entry"]
     },
     {
       "name": "kx-project-init",
-      "description": "创建新的 kx-rs 框架项目模板（含 AGENTS/.agents/README/install）",
-      "version": "1.2.1",
+      "description": "创建新的 kx-rs 项目模板",
+      "version": "1.3.0",
       "source": "./",
       "strict": false,
-      "skills": [
-        "./skills/kx-project-init"
-      ]
+      "skills": ["./skills/kx-project-init"]
     },
     {
-      "name": "kx-rs",
-      "description": "kx-rs 实践层开发与分层落地规范",
-      "version": "1.1.0",
+      "name": "write-entity",
+      "description": "SeaORM 2 entity、Schema、索引和迁移",
+      "version": "1.0.0",
       "source": "./",
       "strict": false,
-      "skills": [
-        "./skills/kx-rs"
-      ]
+      "skills": ["./skills/write-entity"]
     },
     {
-      "name": "kx-sea-orm",
-      "description": "SeaORM 与 #[derive(Sea)] 示例、字段设计与索引规范",
-      "version": "1.2.0",
+      "name": "write-svc",
+      "description": "业务 service、查询、事务和一致性",
+      "version": "1.0.0",
       "source": "./",
       "strict": false,
-      "skills": [
-        "./skills/kx-sea-orm"
-      ]
+      "skills": ["./skills/write-svc"]
     },
     {
-      "name": "kx-axum-web",
-      "description": "kx-axum web 层 ctl/router/install 模板",
-      "version": "1.1.0",
+      "name": "write-ctl",
+      "description": "kx-axum DTO、controller 和 ApiRouter",
+      "version": "1.0.0",
       "source": "./",
       "strict": false,
-      "skills": [
-        "./skills/kx-axum-web"
-      ]
+      "skills": ["./skills/write-ctl"]
     },
     {
       "name": "kx-sdk",
-      "description": "sdks/ 第三方接入与 SDK 封装规范",
+      "description": "第三方 SDK 接入与封装规范",
       "version": "1.1.0",
       "source": "./",
       "strict": false,
-      "skills": [
-        "./skills/kx-sdk"
-      ]
+      "skills": ["./skills/kx-sdk"]
     },
     {
       "name": "kx-sdk-aigc",
-      "description": "sdks/aigc 平台 API、streaming 与 proxy 规范",
+      "description": "AIGC 平台 API、streaming 与 proxy 规范",
       "version": "1.1.0",
       "source": "./",
       "strict": false,
-      "skills": [
-        "./skills/kx-sdk-aigc"
-      ]
+      "skills": ["./skills/kx-sdk-aigc"]
     },
     {
       "name": "kx-skill-creator",
-      "description": "repo-local skill 创建、维护与校验工具",
-      "version": "1.1.0",
+      "description": "repo-local skill 创建、维护与校验",
+      "version": "1.2.0",
       "source": "./",
       "strict": false,
-      "skills": [
-        "./skills/kx-skill-creator"
-      ]
-    },
-    {
-      "name": "uni-app-core",
-      "description": "uni-app 跨端框架核心 API 与兼容性说明",
-      "version": "1.1.0",
-      "source": "./",
-      "strict": false,
-      "skills": [
-        "./skills/uni-app-core"
-      ]
-    },
-    {
-      "name": "uview-pro",
-      "description": "uView-Pro 组件库用法与模板",
-      "version": "1.1.0",
-      "source": "./",
-      "strict": false,
-      "skills": [
-        "./skills/uview-pro"
-      ]
-    },
-    {
-      "name": "vue-vben-admin",
-      "description": "Vue Vben Admin v5 开发模板与架构说明",
-      "version": "1.1.0",
-      "source": "./",
-      "strict": false,
-      "skills": [
-        "./skills/vue-vben-admin"
-      ]
+      "skills": ["./skills/kx-skill-creator"]
     }
   ]
 }

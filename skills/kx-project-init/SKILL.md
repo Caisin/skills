@@ -30,12 +30,14 @@ description: |
 
 ### 不适用
 
-- 已有项目里补具体 web handler / router / install
-  - 交给 `kx-axum-web`
-- 已有项目里补实体、迁移、CRUD、事务示例
-  - 交给 `kx-sea-orm`
-- 已有项目里只讨论 practice 层目录落点
-  - 交给 `kx-rs`
+- 已有项目里补 DTO、handler、router 或接口安全策略
+  - 交给 `write-ctl`
+- 已有项目里补实体、Schema、索引或迁移
+  - 交给 `write-entity`
+- 已有项目里补查询、写入、事务或多表一致性
+  - 交给 `write-svc`
+- 已有项目里只讨论目录落点
+  - 交给 `kx-entry`
 - 纯 SDK 接入问题
   - 交给 `kx-sdk` / `kx-sdk-aigc`
 
@@ -49,10 +51,12 @@ description: |
   - 读 `references/agents-template.md`
 - 默认 `README.md` 初始化模板
   - 读 `references/readme-template.md`
-- 想继续细化 web 层模板
-  - 对照 `../kx-axum-web/references/patterns.md`
-- 想继续细化实体 / 迁移 / CRUD 模板
-  - 对照 `../kx-sea-orm/references/patterns.md`
+- 想继续细化 entity 与迁移模板
+  - 对照 `../write-entity/references/patterns.md`
+- 想继续细化 service 与事务模板
+  - 对照 `../write-svc/references/patterns.md`
+- 想继续细化 DTO、handler 与 router 模板
+  - 对照 `../write-ctl/references/patterns.md`
 
 ## 核心规则
 

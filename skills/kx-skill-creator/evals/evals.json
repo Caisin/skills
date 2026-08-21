@@ -15,7 +15,7 @@
     },
     {
       "id": 3,
-      "prompt": "我要给一个能被其他项目直接依赖的 crate 写 skill，类似 kx-biz-param，这类 skill 应该怎么写？",
+      "prompt": "我要给一个能被其他项目直接依赖的业务 crate 写 skill，这类 skill 应该怎么写？",
       "expected_output": "应命中 kx-skill-creator，并强调这类 skill 默认使用 crate 视角：优先写 crate 名、Cargo 依赖方式、对外入口和下游接入模板，而不是只写源码目录路径。",
       "files": []
     }

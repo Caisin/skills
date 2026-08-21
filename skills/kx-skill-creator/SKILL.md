@@ -60,7 +60,7 @@ description: |
 
 ## crate 视角约定
 
-对于 `kx-biz-param` 这类**可被其他项目直接依赖和复用的 crate 型 skill**，默认遵守这条规则：
+对于可被其他项目直接依赖和复用的 **crate 型 skill**，默认遵守这条规则：
 
 ```text
 ✅ 优先使用 crate 名、依赖写法、对外入口（如 router/install）来描述 skill
@@ -148,6 +148,6 @@ python3 .agents/skills/kx-skill-creator/scripts/skill_tool.py validate
 - 先说明这是 repo-local skill 维护场景，应使用 kx-skill-creator。
 - 推荐直接运行 skill_tool.py init <name> --kind practice。
 - 生成骨架后再补 SKILL.md、references、evals 的仓库特定内容。
-- 如果这是类似 kx-biz-param 的可复用 crate skill，正文应优先写 crate 名、依赖方式和对外入口，而不是只写源码目录。
+- 如果这是可复用 crate skill，正文应优先写 crate 名、依赖方式和对外入口，而不是只写源码目录。
 - 最后运行 validate。
 ```

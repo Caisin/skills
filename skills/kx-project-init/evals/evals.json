@@ -15,7 +15,7 @@
     {
       "id": 2,
       "prompt": "给我一个 kx-axum 的 page/save handler 模板，直接复用 Query/ModifyModel。",
-      "expected_output": "不应继续停在项目初始化 skill，应明确 handoff 到 kx-axum-web。",
+      "expected_output": "不应继续停在项目初始化 skill，应明确 handoff 到 write-ctl。",
       "files": [
         ".agents/skills/kx-project-init/SKILL.md"
       ]

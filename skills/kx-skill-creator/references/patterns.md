@@ -50,7 +50,7 @@ python3 .agents/skills/kx-skill-creator/scripts/skill_tool.py validate
 
 ## crate 视角补充规则
 
-适用于 `kx-biz-param` 这类“其他项目会直接 Cargo 引入”的 skill：
+适用于其他项目会直接通过 Cargo 引入的 crate 型 skill：
 
 ```text
 ✅ 推荐写法：这是 kx-xxx crate，可通过 Cargo.toml 引入，并复用它的 router/install/service 能力
@@ -62,7 +62,7 @@ python3 .agents/skills/kx-skill-creator/scripts/skill_tool.py validate
 ```text
 1. crate 名
 2. Cargo.toml 依赖写法
-3. 对外统一入口（如 ParamRouter::apis() / ParamInstall::migrate()）
+3. 对外统一入口（如 `XxxRouter::apis()` / `XxxInstall::migrate()`）
 4. 下游项目最小接入模板
 5. 只有需要维护内部实现时，才补 src/* 导航
 ```

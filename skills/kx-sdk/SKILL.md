@@ -36,8 +36,12 @@ description: |
   - 交给 `rust-router`
 - 明确的 bug、回归、测试失败排查
   - 交给 `systematic-debugging`
-- 实践层 `bins/` / `bizs/` / `ents/` 落地
-  - 交给 `kx-rs`
+- SDK 接入后的业务编排、缓存或事务
+  - 交给 `write-svc`
+- 将 SDK 能力暴露为 HTTP 接口
+  - 交给 `write-ctl`
+- 不确定业务代码应落哪个目录
+  - 交给 `kx-entry`
 - 明确的 `sdks/aigc` provider / proxy / stream 设计
   - 交给 `kx-sdk-aigc`
 - 明确的 `sdks/google` OAuth2 / service account / YouTube / AdMob / Android Publisher / Firebase 问题
