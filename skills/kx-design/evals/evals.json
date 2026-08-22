@@ -3,8 +3,8 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "我要修改多数据源注册的发布顺序和 alias 重连语义，先写 KX 设计文档。",
-      "expected_output": "应命中 kx-design，从 docs/dev/design/_template.md 创建文档，覆盖行为、数据一致性、兼容性、替代方案和验证计划。",
+      "prompt": "我要修改 SeaORM 多数据源注册顺序和 alias 重连语义，先写 KX 工程设计。",
+      "expected_output": "应命中 kx-design，使用 docs/dev/design/_template.md 创建中文设计，覆盖可观察行为、数据源所有权、失败语义、兼容性和验证计划。",
       "files": [
         "docs/dev/design/_template.md",
         ".agents/skills/kx-design/SKILL.md"
@@ -12,8 +12,8 @@
     },
     {
       "id": 2,
-      "prompt": "为 SeaORM 业务迁移写一个总设计目录，并按模块拆分步骤设计。",
-      "expected_output": "应命中 kx-design；主设计记录目标、稳定边界、阶段顺序与共同验收，分步骤文档记录各模块范围、依赖、风险和验证，并保持相互链接。",
+      "prompt": "规划一个跨 auth、asset、mall、PC 管理端和小程序的迁移，需要能分阶段继续。",
+      "expected_output": "应创建 docs/dev/design/<feature>/index.md 与编号阶段文档；总览包含阶段状态、最近证据、恢复点和日志，阶段定义串行门禁与最终前后端联合验证。",
       "files": [
         ".agents/skills/kx-design/SKILL.md",
         ".agents/skills/kx-design/references/patterns.md"
@@ -21,16 +21,33 @@
     },
     {
       "id": 3,
-      "prompt": "给后台首页设计品牌色、Logo 和 Banner。",
-      "expected_output": "不应命中 kx-design；这是 UI / 品牌视觉设计，应交给 design。",
+      "prompt": "设计一张带表字段备注、联合索引和存量数据回填的 SeaORM 2 表。",
+      "expected_output": "应区分 sync_schema_with_comments、install.rs 显式联合索引和数据迁移；说明 DDL 审查、备份、SQLite 验收及目标数据库部署前验证，不能恢复 Toasty/TcMgr。",
+      "files": [
+        ".agents/skills/kx-design/SKILL.md",
+        ".agents/skills/write-entity/SKILL.md"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "这个阶段想让三个 agent 并行写后端、前端和测试，怎么拆设计？",
+      "expected_output": "应在阶段文档增加实现泳道，写明独占文件、只读依赖、产物和门禁；共享 router、install、manifest 和进度表只交给一个集成负责人。",
       "files": [
         ".agents/skills/kx-design/SKILL.md"
       ]
     },
     {
-      "id": 4,
+      "id": 5,
+      "prompt": "给后台首页设计品牌色、Logo 和 Banner。",
+      "expected_output": "不应命中 kx-design；这是 UI 和品牌视觉设计，应交给 design。",
+      "files": [
+        ".agents/skills/kx-design/SKILL.md"
+      ]
+    },
+    {
+      "id": 6,
       "prompt": "README 有一个错别字，直接修正。",
-      "expected_output": "不应要求设计文档；这是 prose 或直接的小型文档修正。",
+      "expected_output": "不应要求工程设计文档；这是 prose 或直接的小型文档修正。",
       "files": []
     }
   ]

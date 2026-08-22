@@ -1,0 +1,4 @@
+interface:
+  display_name: "KX 工程设计"
+  short_description: "设计 KX 工程契约、迁移和分阶段实施"
+  default_prompt: "使用 $kx-design 在实现前编写或评审 KX 工程设计。"
