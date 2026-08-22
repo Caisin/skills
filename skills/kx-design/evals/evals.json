@@ -49,6 +49,24 @@
       "prompt": "README 有一个错别字，直接修正。",
       "expected_output": "不应要求工程设计文档；这是 prose 或直接的小型文档修正。",
       "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "这个迁移被拆成 entity、svc、ctl、前端、单测、集成测试和文档七个阶段，每阶段都跑全 workspace，帮我调整。",
+      "expected_output": "应按可交付业务闭环合并阶段，通常控制在 3 到 6 个；技术分层改为阶段内清单或泳道，阶段只跑最小充分验证，完整 workspace、前端和端到端回归集中到最终验收。",
+      "files": [
+        ".agents/skills/kx-design/SKILL.md",
+        ".agents/skills/kx-design/references/patterns.md"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "auth 和 storage 都依赖已经接受的公共契约，但互相不依赖，能不能两个阶段并行？",
+      "expected_output": "可以在总览中放入同一并行组并同时进行；必须确认无对方未提交 API/Schema 依赖、无共享写文件、测试资源互不干扰，并由集成负责人串行合并共享入口。后续阶段等待并行组内必需阶段完成。",
+      "files": [
+        ".agents/skills/kx-design/SKILL.md",
+        ".agents/skills/kx-design/references/patterns.md"
+      ]
     }
   ]
 }
