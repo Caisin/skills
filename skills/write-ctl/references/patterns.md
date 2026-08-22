@@ -67,6 +67,17 @@ pub async fn page(
 Query DTO，并在 svc 中映射到 `MsgEvt::qry()` / `MsgEvt::sel()`。不要在 ctl/dto 中复制 entity 的
 `_eq/_gte/_in/update_set` 等生成器。
 
+生成 Query 可直接解析标准排序参数：
+
+```text
+_order_by[asc]=id
+_order_by[desc]=created_at
+```
+
+需要兼容既有 PC 端 `sort=created_at&descending=true` 时，协议 DTO 可以暂时保留这两个字段，但
+ctl 只透传给 svc；svc 使用 entity 生成的 `sort/sort_or` 做列校验、方向转换和默认排序，不在 ctl
+或 DTO 中维护实体列 `match`。新接口优先统一使用 `_order_by`，避免同时发两套排序参数。
+
 ## Router Aggregation
 
 ```rust
@@ -121,6 +132,7 @@ src/ctl/mod.rs          -> 模块声明和稳定重导出
 ❌ 请求 DTO 复用完整 entity，允许调用方写内部字段
 ❌ 使用 Axum 原生 `Query` 解析复杂查询，或把 `page/page_size/size` 重复塞进业务查询 DTO
 ❌ 已有 `<TableName>Qry` 时再复制同字段、同语义的 Query DTO
+❌ 在 handler 中把 `sort` 字符串转换为 SQL 或逐字段匹配
 ❌ 使用 Axum 0.7 的 /:id 路径语法
 ❌ 第三方回调只标 public，没有 ingress 和 plaintext 策略
 ```
@@ -131,6 +143,7 @@ src/ctl/mod.rs          -> 模块声明和稳定重导出
 ✅ handler 只提取参数、调用 svc 和转换响应
 ✅ 请求与响应使用最小 DTO/View
 ✅ 分页使用 `QsQuery(req): QsQuery<XxxQuery>` 和 `QsQuery(page): QsQuery<Paging>`
+✅ 标准排序使用 `_order_by`；兼容排序由 svc 的 `sort/sort_or` 处理
 ✅ 路径参数使用 Axum 0.8 的 {id} 语法
 ✅ 第三方回调显式登记 external_callback、ingress 和 plaintext
 ```

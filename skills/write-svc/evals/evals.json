@@ -60,6 +60,15 @@
         ".agents/skills/write-svc/SKILL.md",
         ".agents/skills/write-svc/references/patterns.md"
       ]
+    },
+    {
+      "id": 8,
+      "prompt": "后台列表传 sort 和 descending，是否要在 service 里 match 每个可排序字段？",
+      "expected_output": "不需要。应在 Alias::sel() 上使用生成的 sort/sort_or；分页有默认顺序时用 sort_or(..., |s| s.asc_xxx()) 做类型化回退，并追加主键作为稳定次级排序。生成器通过实体 Column::from_str 校验字段，不能把前端字符串直接拼 SQL。",
+      "files": [
+        ".agents/skills/write-svc/SKILL.md",
+        ".agents/skills/write-svc/references/patterns.md"
+      ]
     }
   ]
 }

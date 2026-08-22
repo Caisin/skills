@@ -50,6 +50,8 @@ description: |
 10. 两个 `QsQuery` 都会解析完整 query string，分页查询 DTO 不使用 `deny_unknown_fields`，否则会把 `page/page_size/size` 误判为未知字段。
 11. 单表管理查询若允许公开对应字段，可直接使用宏生成的 `QsQuery<TableNameQry>`；若接口需要别名、
     组合条件或隐藏内部字段，再定义协议 Query DTO 并在 svc 映射，不能复制一套同名 entity 查询器。
+12. 生成 Query 的标准排序协议是 `_order_by[asc]=field` / `_order_by[desc]=field`；兼容既有
+    `sort + descending` DTO 时由 svc 调用生成的 `sort/sort_or`，ctl 不维护排序字段白名单或字段 `match`。
 
 ## 常见错误 vs 正确做法
 
@@ -59,6 +61,7 @@ description: |
 ❌ 用裸 Router 绕过 ApiCatalog，或让公开接口隐式变成明文
 ❌ 使用 `Query<PageQuery>`，或在业务查询 DTO 中重复定义 `page/page_size/size`
 ❌ 为单表字段条件复制一套与 `<TableName>Qry` 完全相同的 Query DTO 和 builder
+❌ 在 ctl 中解析排序方向、匹配实体字段或拼接 ORDER BY
 ✅ ctl 只适配协议，业务规则交给 svc，安全策略显式登记
 ✅ `QsQuery(req): QsQuery<ItemQuery>` 与 `QsQuery(page): QsQuery<Paging>` 分别提取条件和分页
 ```

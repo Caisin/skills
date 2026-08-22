@@ -43,6 +43,15 @@
         ".agents/skills/write-entity/SKILL.md",
         ".agents/skills/write-entity/references/patterns.md"
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "derive(Sea) 的实体要支持前端 sort + descending，是否还要为每张表生成一套字段 match？",
+      "expected_output": "不需要。derive(Sea) 已生成 EntitySelect::sort/sort_or/order_by，并通过当前实体 Column::from_str 校验字段；标准 Query 可直接解析 _order_by[asc]/_order_by[desc]。分页默认排序应使用 sort_or 的类型化 fallback。",
+      "files": [
+        ".agents/skills/write-entity/SKILL.md",
+        ".agents/skills/write-entity/references/patterns.md"
+      ]
     }
   ]
 }

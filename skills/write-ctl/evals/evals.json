@@ -43,6 +43,15 @@
         ".agents/skills/write-ctl/SKILL.md",
         ".agents/skills/write-ctl/references/patterns.md"
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "单表后台分页需要支持前端排序，ctl 是否应该把 sort 字段逐个 match 成数据库列？",
+      "expected_output": "不应该。新接口优先使用生成 Query 的 _order_by[asc]/_order_by[desc] 协议；兼容 sort + descending 时 ctl 只透传 DTO，由 svc 使用 entity 生成的 sort/sort_or 校验实体列并应用默认排序。",
+      "files": [
+        ".agents/skills/write-ctl/SKILL.md",
+        ".agents/skills/write-ctl/references/patterns.md"
+      ]
     }
   ]
 }

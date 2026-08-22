@@ -17,7 +17,26 @@ let lots = AstLot::sel()
     .await?;
 ```
 
-动态排序、聚合投影、复合 `Condition`、批量更新和 CAS 可以使用底层 SeaORM builder；不要机械替换动态 `Column`。
+前端动态排序使用生成的 `sort/sort_or`，由实体 `Column::from_str` 校验字段，不在 svc 重复字段匹配：
+
+```rust
+let page = AstItem::sel()
+    .enabled_eq(true)
+    .sort_or(query.sort.as_deref(), query.descending, |s| {
+        s.asc_spend_priority()
+    })
+    .asc_id()
+    .page(db, paging)
+    .await?;
+```
+
+`sort` 在排序字段为空或非法时不追加排序；`sort_or` 此时执行类型化 fallback，适合分页默认排序。
+二者都只接受当前实体可解析的列，不能把前端字符串直接拼入 SQL。若接口直接使用生成的 Query，
+也可通过 `_order_by[asc]=id` / `_order_by[desc]=created_at` 传递 `OrderBy`。分页仍要追加主键作为
+稳定次级排序。
+
+聚合投影、复合 `Condition`、批量更新和 CAS 可以使用底层 SeaORM builder；不要机械替换动态
+JOIN 或聚合表达式。
 
 表名决定生成 alias，例如 `msg_evt -> MsgEvt`、`ast_lot -> AstLot`。若旧业务名称与表名不同，迁移时
 优先改调用方使用生成 alias；只有公共 API 兼容有明确必要时才保留独立语义类型，不能用手写 alias
@@ -159,6 +178,7 @@ use crate::SeaOrmExt as _;
 ❌ 分页查询没有稳定排序
 ❌ 把外部 SDK 调用放进长数据库事务
 ❌ 为 `derive(Sea)` 已生成的 alias、Query、setter、CRUD 再建无业务逻辑 wrapper
+❌ 为 `sort + descending` 手写逐字段 `match`，或把排序字段直接拼 SQL
 ```
 
 ## 正确做法
@@ -168,5 +188,6 @@ use crate::SeaOrmExt as _;
 ✅ 使用 SeaTrans::t 或 SeaTrans::sea_trans 统一事务控制流
 ✅ 不可变记录使用 insert
 ✅ 分页和批处理提供稳定排序
+✅ 前端排序使用 `sort/sort_or`，默认排序用类型化 fallback
 ✅ 用 outbox 或可重试任务衔接外部副作用
 ```
