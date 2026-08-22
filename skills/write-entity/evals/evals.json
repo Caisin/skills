@@ -25,6 +25,24 @@
       "files": [
         ".agents/skills/write-entity/references/patterns.md"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "msg_evt 已经使用 model_attrs(derive(Sea))，还需要写 pub type DeviceEvent = Model 和一套 DeviceEventQuery 吗？",
+      "expected_output": "不需要。应说明 derive(Sea) 已按表名生成 MsgEvt、MsgEvtQry、MsgEvtModify、MsgEvtEntity、MsgEvtCol、COLUMN、字段条件链和常用 CRUD；业务代码直接使用这些契约，不重复手写 alias、Query、setter 或 CRUD wrapper。",
+      "files": [
+        ".agents/skills/write-entity/SKILL.md",
+        ".agents/skills/write-entity/references/patterns.md"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Sea 查询条件应该继续用 created_at_ge、id_is_in 和 name_start_with 吗？",
+      "expected_output": "不应该。derive(Sea) 只生成规范命名 created_at_gte、id_in、name_starts_with；同时提供 gt/lte/lt/not_in/between/not_between/not_contains/is_not_null 等条件，旧缩写方法不保留，也不应在业务 crate 自建兼容 trait。",
+      "files": [
+        ".agents/skills/write-entity/SKILL.md",
+        ".agents/skills/write-entity/references/patterns.md"
+      ]
     }
   ]
 }

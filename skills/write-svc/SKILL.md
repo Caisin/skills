@@ -40,14 +40,16 @@ description: |
 
 1. svc 负责校验、事务、幂等、多表组装和一致性；ctl 不承担这些职责。
 2. 静态单表查询优先实体 alias 的 `get/get_opt/qry/sel`，不展开完整模块路径。
-3. 分页和批处理补稳定排序；多表列表使用“主表分页 -> 批量从表 -> 内存组装”。
-4. 局部条件更新优先 `Alias::qry().<field>_eq(...).update_set(...)`；新建且必须拒绝重复时用 `insert`；完整 Model 按主键允许覆盖时用 `upsert`。
-5. generated upsert 以主键为冲突目标，不隐式使用自然唯一键。
-6. version、lease、fencing、claim 和状态前置条件使用返回 `UpdateResult` 的底层条件更新，并校验影响行数；当前只返回 `Result<()>` 的 `update_set` 用于不需要 CAS 成功判定的普通局部更新。
-7. 不可变流水、审计、安全事件和账本使用 insert，不做覆盖写。
-8. 事务统一使用 `SeaTrans::t`；需要保留领域错误类型时使用 `SeaTrans::sea_trans`。不要在业务示例中手写 `begin/commit/rollback`。单数据源保持数据库原子性，多数据源只提供 best-effort 顺序提交。
-9. 时间统一使用 `kx_tools::times::sys_timestamp()`，不在各模块定义 `now_ts()`。
-10. 实体已实现 `Default` 且 `None/0/false` 确实是稳定缺省值时，构造使用 `..Default::default()`；状态、时间、版本、权限等业务关键字段仍显式赋值，不为必填 DTO 静默补默认值。
+3. alias、字段 Query、`COLUMN`、`update_set`、ActiveModel setter、insert/upsert 和索引 helper 已由
+   `derive(Sea)` 生成；svc 直接消费这些契约，不重新声明 Model alias 或 CRUD wrapper。
+4. 分页和批处理补稳定排序；多表列表使用“主表分页 -> 批量从表 -> 内存组装”。
+5. 局部条件更新优先 `Alias::qry().<field>_eq(...).update_set(...)`；新建且必须拒绝重复时用 `insert`；完整 Model 按主键允许覆盖时用 `upsert`。
+6. generated upsert 以主键为冲突目标，不隐式使用自然唯一键。
+7. `update_set` 返回 SeaORM `UpdateResult`；version、lease、fencing、claim 和状态前置条件必须进入查询条件，并校验 `rows_affected == 1`。
+8. 不可变流水、审计、安全事件和账本使用 insert，不做覆盖写。
+9. 事务统一使用 `SeaTrans::t`；需要保留领域错误类型时使用 `SeaTrans::sea_trans`。不要在业务示例中手写 `begin/commit/rollback`。单数据源保持数据库原子性，多数据源只提供 best-effort 顺序提交。
+10. 时间统一使用 `kx_tools::times::sys_timestamp()`，不在各模块定义 `now_ts()`。
+11. 实体已实现 `Default` 且 `None/0/false` 确实是稳定缺省值时，构造使用 `..Default::default()`；状态、时间、版本、权限等业务关键字段仍显式赋值，不为必填 DTO 静默补默认值。
 
 ## 常见错误 vs 正确做法
 
@@ -57,6 +59,7 @@ description: |
 ❌ 在循环里逐条查询关联表，或在远端调用期间持有长事务
 ❌ 把 SeaTrans 描述成跨库原子事务
 ❌ 为了少写字段给必填 DTO 实现 Default，掩盖缺失输入
+❌ `derive(Sea)` 后又定义业务 Model alias、字段查询器或 update/upsert wrapper
 ✅ svc 明确写入语义、事务边界、幂等和失败行为
 ✅ 只对稳定缺省字段使用 `..Default::default()`，关键业务字段保持显式
 ```

@@ -39,14 +39,18 @@ description: |
 ## 核心规则
 
 1. 使用 `#[sea_orm::model]` 和 `model_attrs(derive(Sea))`，不手写空 `Relation`。
-2. 每张表和持久化字段都写 SeaORM `comment`；已有 `comment` 时不保留重复 `///`。
-3. relation 只表达查询关系。拥有关系字段的 `belongs_to` 必须 `skip_fk`，数据库不创建外键。
-4. 普通业务表优先 `i64` 自增主键；兼容 SQLite 的持久化数字不用无符号类型。
-5. JSON 使用 `Json`；时间戳统一调用 `kx_tools::times::sys_timestamp()`。
-6. `indexed`、`unique`、同名 `unique_key` 分别表达单列普通、单列唯一和联合唯一索引。
-7. 联合普通索引和同一字段参与第二个联合唯一分组时，在 `install.rs` 显式创建。
-8. 业务迁移只由 `XxxInstall::migrate()/migrate_with()` 暴露，不创建 `entity/prelude.rs`。
-9. `sync_schema_with_comments()` 只补缺失对象；类型修改、删除和已有约束调整使用显式 migration。
+2. `derive(Sea)` 已按表名生成 Model alias 及配套类型，直接使用生成结果；不要再写
+   `pub type Xxx = Model`、自建 Query wrapper、重复 ActiveModel setter 或同名 CRUD helper。
+3. 字段条件方法统一使用 `_eq/_ne/_gte/_gt/_lte/_lt/_in/_not_in/_between/_not_between`、
+   `_like/_contains/_not_contains/_starts_with/_ends_with/_is_null/_is_not_null`；不使用旧缩写名。
+4. 每张表和持久化字段都写 SeaORM `comment`；已有 `comment` 时不保留重复 `///`。
+5. relation 只表达查询关系。拥有关系字段的 `belongs_to` 必须 `skip_fk`，数据库不创建外键。
+6. 普通业务表优先 `i64` 自增主键；兼容 SQLite 的持久化数字不用无符号类型。
+7. JSON 使用 `Json`；时间戳统一调用 `kx_tools::times::sys_timestamp()`。
+8. `indexed`、`unique`、同名 `unique_key` 分别表达单列普通、单列唯一和联合唯一索引。
+9. 联合普通索引和同一字段参与第二个联合唯一分组时，在 `install.rs` 显式创建。
+10. 业务迁移只由 `XxxInstall::migrate()/migrate_with()` 暴露，不创建 `entity/prelude.rs`。
+11. `sync_schema_with_comments()` 只补缺失对象；类型修改、删除和已有约束调整使用显式 migration。
 
 ## 常见错误 vs 正确做法
 
@@ -54,7 +58,10 @@ description: |
 ❌ 用重复 rustdoc 代替表和字段 comment
 ❌ 在 relation 上创建数据库外键，或把联合普通索引误写成 unique_key
 ❌ 在 entity/prelude.rs 和 install.rs 维护两套迁移入口
+❌ `derive(Sea)` 后再手写 `pub type DeviceEvent = Model` 或另一套 qry/upsert wrapper
+❌ 继续使用 `_ge/_g/_le/_l/_is_in/_bt/_not_bt/_start_with/_end_with/_not_null` 旧方法名
 ✅ entity 声明模型契约，install.rs 统一补充同步和显式索引
+✅ `msg_evt` 直接使用宏生成的 `MsgEvt`、`MsgEvtQry`、`MsgEvtEntity` 和 `MsgEvtCol`
 ```
 
 ## 输出模板

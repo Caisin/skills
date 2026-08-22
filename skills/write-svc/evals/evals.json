@@ -42,6 +42,24 @@
         ".agents/skills/write-svc/SKILL.md",
         ".agents/skills/write-svc/references/patterns.md"
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "迁移 msg_evt service 时想手写 DeviceEvent alias、查询结构和 update helper，是否有必要？",
+      "expected_output": "没有必要。应直接使用 derive(Sea) 按表名生成的 MsgEvt 与 MsgEvt::qry()/sel()/get()、字段条件链、update_set、insert/upsert 等契约；update_set 返回 UpdateResult，可用于 CAS 影响行数检查；只有动态 JOIN、聚合、后端专属条件等生成 API 不覆盖的场景才下沉 SeaORM builder。",
+      "files": [
+        ".agents/skills/write-svc/SKILL.md",
+        ".agents/skills/write-svc/references/patterns.md"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "按 version 条件更新记录时，derive(Sea) 的 update_set 能否判断 CAS 是否成功？",
+      "expected_output": "可以。应把 id/version/状态前置条件都放进 Alias::qry()，调用 update_set 后检查返回的 UpdateResult.rows_affected == 1；否则返回稳定并发冲突错误，不再因为旧 Result<()> 契约下沉重复的更新 wrapper。",
+      "files": [
+        ".agents/skills/write-svc/SKILL.md",
+        ".agents/skills/write-svc/references/patterns.md"
+      ]
     }
   ]
 }

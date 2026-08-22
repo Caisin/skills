@@ -34,6 +34,15 @@
         ".agents/skills/write-ctl/SKILL.md",
         ".agents/skills/write-ctl/references/patterns.md"
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "msg_evt 已使用 derive(Sea)，后台分页是否还要复制一套字段完全相同的 EventQuery？",
+      "expected_output": "如果所有字段都允许作为公开筛选条件，应直接使用 QsQuery<MsgEvtQry> 和独立 QsQuery<Paging>；只有 keyword、跨表组合、字段别名或隐藏内部字段时才定义协议 Query DTO，并在 svc 映射，不能复制 entity Query 或 CRUD builder。",
+      "files": [
+        ".agents/skills/write-ctl/SKILL.md",
+        ".agents/skills/write-ctl/references/patterns.md"
+      ]
     }
   ]
 }

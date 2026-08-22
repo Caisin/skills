@@ -49,6 +49,24 @@ handler 中不直接访问 `SeaOrms`、不 begin transaction、不逐表写入�
 `QsQuery` 会分别解析完整 query string，因此分页查询 DTO 不要标记
 `#[serde(deny_unknown_fields)]`，否则业务条件 extractor 会拒绝分页字段。
 
+## Generated Entity Query
+
+`model_attrs(derive(Sea))` 已生成 `<TableName>Qry`，包含可序列化字段条件和规范链式方法。单表后台管理
+接口在确认所有字段都允许成为筛选条件后，可以直接提取：
+
+```rust
+pub async fn page(
+    QsQuery(query): QsQuery<MsgEvtQry>,
+    QsQuery(page): QsQuery<Paging>,
+) -> Result<R<Page<MsgEvt>>, AxumErr> {
+    Ok(MsgEvtSvc::page(query, page).await?.into())
+}
+```
+
+接口需要 `keyword`、跨表条件、字段别名，或必须隐藏 tenant/version/token 等内部字段时，保留专用协议
+Query DTO，并在 svc 中映射到 `MsgEvt::qry()` / `MsgEvt::sel()`。不要在 ctl/dto 中复制 entity 的
+`_eq/_gte/_in/update_set` 等生成器。
+
 ## Router Aggregation
 
 ```rust
@@ -102,6 +120,7 @@ src/ctl/mod.rs          -> 模块声明和稳定重导出
 ❌ handler 直接访问 SeaOrms 或开启事务
 ❌ 请求 DTO 复用完整 entity，允许调用方写内部字段
 ❌ 使用 Axum 原生 `Query` 解析复杂查询，或把 `page/page_size/size` 重复塞进业务查询 DTO
+❌ 已有 `<TableName>Qry` 时再复制同字段、同语义的 Query DTO
 ❌ 使用 Axum 0.7 的 /:id 路径语法
 ❌ 第三方回调只标 public，没有 ingress 和 plaintext 策略
 ```

@@ -48,6 +48,8 @@ description: |
 8. 路由 path 使用 Axum 0.8 `{id}` 语法，不使用 `/:id`。
 9. 分页 handler 分别使用 `QsQuery<查询条件>` 和 `QsQuery<Paging>`；查询 DTO 不重复定义 `page`、`page_size`、`size` 或 `paging()`。
 10. 两个 `QsQuery` 都会解析完整 query string，分页查询 DTO 不使用 `deny_unknown_fields`，否则会把 `page/page_size/size` 误判为未知字段。
+11. 单表管理查询若允许公开对应字段，可直接使用宏生成的 `QsQuery<TableNameQry>`；若接口需要别名、
+    组合条件或隐藏内部字段，再定义协议 Query DTO 并在 svc 映射，不能复制一套同名 entity 查询器。
 
 ## 常见错误 vs 正确做法
 
@@ -56,6 +58,7 @@ description: |
 ❌ 直接返回包含密文、token 或内部状态的完整 Model
 ❌ 用裸 Router 绕过 ApiCatalog，或让公开接口隐式变成明文
 ❌ 使用 `Query<PageQuery>`，或在业务查询 DTO 中重复定义 `page/page_size/size`
+❌ 为单表字段条件复制一套与 `<TableName>Qry` 完全相同的 Query DTO 和 builder
 ✅ ctl 只适配协议，业务规则交给 svc，安全策略显式登记
 ✅ `QsQuery(req): QsQuery<ItemQuery>` 与 `QsQuery(page): QsQuery<Paging>` 分别提取条件和分页
 ```

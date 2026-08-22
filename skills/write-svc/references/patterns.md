@@ -2,6 +2,10 @@
 
 ## Query Through Domain Aliases
 
+这里的 alias、`qry/sel/get/get_opt`、字段条件链、`update_set`、`insert/upsert/upsert_many` 和
+ActiveModel 的 `set_<field>` 均由 entity 的 `model_attrs(derive(Sea))` 生成。业务 service 直接使用，
+不要重复声明 `pub type Xxx = Model`，也不要为了“统一入口”再包一层无业务规则的 CRUD service。
+
 ```rust
 let lots = AstLot::sel()
     .acct_id_eq(req.acct_id)
@@ -14,6 +18,10 @@ let lots = AstLot::sel()
 ```
 
 动态排序、聚合投影、复合 `Condition`、批量更新和 CAS 可以使用底层 SeaORM builder；不要机械替换动态 `Column`。
+
+表名决定生成 alias，例如 `msg_evt -> MsgEvt`、`ast_lot -> AstLot`。若旧业务名称与表名不同，迁移时
+优先改调用方使用生成 alias；只有公共 API 兼容有明确必要时才保留独立语义类型，不能用手写 alias
+掩盖命名差异。
 
 ## Conditional Update With update_set
 
@@ -37,7 +45,14 @@ pub async fn rename_user<C: ConnectionTrait>(
 }
 ```
 
-`update_set` 适合按主键、软删状态或其它业务条件做局部字段更新。version/CAS、lease、fencing、claim 等并发控制还必须把预期状态放进条件，并校验影响行数；当前 `update_set` 只返回 `Result<()>` 时，应使用能返回 `UpdateResult` 的底层条件更新完成该校验。
+`update_set` 适合按主键、软删状态或其它业务条件做局部字段更新，并返回 SeaORM
+`UpdateResult`。version/CAS、lease、fencing、claim 等并发控制必须把预期状态放进条件，并校验
+`rows_affected == 1`；不满足时返回稳定并发冲突错误。
+
+字段条件使用规范后缀：`_gte/_gt/_lte/_lt/_in/_not_in/_between/_not_between`、
+`_starts_with/_ends_with/_is_not_null`。旧缩写方法已从宏移除，业务代码不得自行补兼容 trait。
+`qry()` 的每个字段只能保存一个条件；同字段范围优先 `_between`，更复杂的 AND/OR 组合使用
+`sel().to_select()` 或 SeaORM builder。
 
 ## Choose Write Semantics
 
@@ -46,7 +61,7 @@ insert       -> 新建、数据库生成主键、不可变流水、审计/安全
 upsert       -> 完整 Model、主键已知、业务允许覆盖
 upsert_many  -> 多条完整 Model 的主键覆盖写
 update_set   -> 按 alias query 条件局部更新普通业务字段
-底层条件更新 -> 需要校验影响行数的 version/CAS、lease、fencing、claim、状态机转换
+update_set   -> 可直接校验影响行数的 version/CAS、lease、fencing、claim、状态机转换
 ```
 
 ```rust
@@ -143,6 +158,7 @@ use crate::SeaOrmExt as _;
 ❌ 对不可变流水或审计记录做覆盖写
 ❌ 分页查询没有稳定排序
 ❌ 把外部 SDK 调用放进长数据库事务
+❌ 为 `derive(Sea)` 已生成的 alias、Query、setter、CRUD 再建无业务逻辑 wrapper
 ```
 
 ## 正确做法
