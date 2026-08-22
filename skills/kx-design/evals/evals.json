@@ -1,0 +1,37 @@
+{
+  "skill_name": "kx-design",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我要修改多数据源注册的发布顺序和 alias 重连语义，先写 KX 设计文档。",
+      "expected_output": "应命中 kx-design，从 docs/dev/design/_template.md 创建文档，覆盖行为、数据一致性、兼容性、替代方案和验证计划。",
+      "files": [
+        "docs/dev/design/_template.md",
+        ".agents/skills/kx-design/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "为 SeaORM 业务迁移写一个总设计目录，并按模块拆分步骤设计。",
+      "expected_output": "应命中 kx-design；主设计记录目标、稳定边界、阶段顺序与共同验收，分步骤文档记录各模块范围、依赖、风险和验证，并保持相互链接。",
+      "files": [
+        ".agents/skills/kx-design/SKILL.md",
+        ".agents/skills/kx-design/references/patterns.md"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "给后台首页设计品牌色、Logo 和 Banner。",
+      "expected_output": "不应命中 kx-design；这是 UI / 品牌视觉设计，应交给 design。",
+      "files": [
+        ".agents/skills/kx-design/SKILL.md"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "README 有一个错别字，直接修正。",
+      "expected_output": "不应要求设计文档；这是 prose 或直接的小型文档修正。",
+      "files": []
+    }
+  ]
+}

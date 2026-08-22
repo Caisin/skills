@@ -43,7 +43,8 @@ description: |
 | 一般第三方 SDK | `kx-sdk` |
 | Google SDK | `google-sdk` |
 | AIGC SDK | `kx-sdk-aigc` |
-| 设计、文档、提交、PR | 对应 `design`、`prose`、`commit`、`pr` |
+| KX 工程设计、文档、提交、PR | 对应 `kx-design`、`prose`、`commit`、`pr` |
+| UI、品牌与视觉设计 | `design` |
 
 跨层功能按 `write-entity -> write-svc -> write-ctl` 顺序落地；不要用一个 skill 同时展开三层细节。
 
