@@ -11,7 +11,13 @@ use sea_orm::entity::prelude::*;
 #[sea_orm(
     table_name = "job_outbox",
     comment = "任务事务外发事件。",
-    model_attrs(derive(Sea))
+    model_attrs(
+        derive(Sea),
+        kx(index(
+            name = "idx_job_outbox_state_updated_at",
+            columns(state, updated_at)
+        ))
+    )
 )]
 pub struct Model {
     #[sea_orm(primary_key, comment = "事件主键。")]
@@ -111,7 +117,7 @@ pub dept: BelongsTo<super::dept::Entity>,
 use crate::SeaOrmExt as _;
 use anyhow::Result;
 use kx_sea_common::SchemaCommentSyncExt;
-use sea_orm::{ConnectionTrait, DatabaseConnection};
+use sea_orm::DatabaseConnection;
 
 pub struct JobInstall;
 
@@ -123,13 +129,6 @@ impl JobInstall {
 
     pub async fn migrate_with(db: &DatabaseConnection) -> Result<()> {
         db.sync_schema_with_comments("kx-biz-job::entity::*").await?;
-        db.execute_raw(db.get_database_backend().build(
-            &JobOutbox::create_index_statement(
-                "idx_job_outbox_state_updated_at",
-                vec![job_outbox::Column::State, job_outbox::Column::UpdatedAt],
-            ),
-        ))
-        .await?;
         Ok(())
     }
 }
@@ -141,18 +140,20 @@ impl JobInstall {
 indexed                  -> 单列普通索引，官方 sync
 unique                   -> 单列唯一索引，官方 sync
 同名 unique_key          -> 联合唯一索引，官方 sync
-联合普通索引             -> install.rs 显式创建
-字段参与多个联合唯一分组 -> 额外分组在 install.rs 显式创建
+联合普通索引             -> kx(index(name = "...", columns(...)))
+额外联合唯一分组         -> kx(unique_index(name = "...", columns(...)))
+表达式/部分/前缀索引     -> install.rs 显式 migration
 ```
 
-不要为了保留旧索引名称而重复创建相同列集合；schema sync 主要按列集合判断索引是否缺失。
+`columns(...)` 使用 Rust 字段名，顺序就是数据库索引列顺序；`column_name` 映射由宏自动处理。
+SeaORM 官方 sync 主要按列集合判断缺失，KX 联合索引按显式索引名幂等创建；不要重复声明相同列集合。
 
 ## Directory Boundary
 
 ```text
 src/entity/<subdomain>/*.rs -> 表、枚举和 relation
 src/entity/mod.rs           -> 子域声明与稳定重导出
-src/install.rs              -> schema sync、备注和属性无法表达的索引
+src/install.rs              -> schema sync、备注和属性无法表达的复杂迁移
 ```
 
 不要创建 `src/entity/prelude.rs` 作为第二套迁移入口。
@@ -172,7 +173,7 @@ src/install.rs              -> schema sync、备注和属性无法表达的索�
 
 ```text
 ✅ 表和持久化字段使用 comment
-✅ 联合普通索引在 install.rs 显式创建
+✅ 联合普通索引在实体 `model_attrs` 的 KX 索引声明中创建并显式固定列顺序
 ✅ relation 拥有侧声明 skip_fk
 ✅ 通过 XxxInstall::migrate()/migrate_with() 暴露迁移入口
 ✅ 先检查 `derive(Sea)` 生成契约，再只补业务特有行为

@@ -21,7 +21,7 @@
     {
       "id": 3,
       "prompt": "SeaORM 2 sync 能否创建联合普通索引？",
-      "expected_output": "应说明 indexed/unique/unique_key 分别覆盖单列普通、单列唯一和联合唯一索引；dense entity 当前不能表达联合普通索引，需在 install.rs 显式创建。",
+      "expected_output": "应说明 indexed/unique/unique_key 分别覆盖单列普通、单列唯一和联合唯一索引；KX derive(Sea) 通过 model_attrs 中的 kx(index(name = ..., columns(...))) 补充联合普通索引，columns 顺序就是数据库索引顺序；复杂表达式或部分索引才留在显式 migration。",
       "files": [
         ".agents/skills/write-entity/references/patterns.md"
       ]

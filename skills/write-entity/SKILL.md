@@ -48,7 +48,9 @@ description: |
 6. 普通业务表优先 `i64` 自增主键；兼容 SQLite 的持久化数字不用无符号类型。
 7. JSON 使用 `Json`；时间戳统一调用 `kx_tools::times::sys_timestamp()`。
 8. `indexed`、`unique`、同名 `unique_key` 分别表达单列普通、单列唯一和联合唯一索引。
-9. 联合普通索引和同一字段参与第二个联合唯一分组时，在 `install.rs` 显式创建。
+9. 联合普通索引和额外联合唯一分组使用
+   `model_attrs(..., kx(index/unique_index(name = "...", columns(...))))`；列清单顺序就是数据库索引
+   顺序。表达式、部分、前缀等复杂索引仍在显式 migration 中创建。
 10. 业务迁移只由 `XxxInstall::migrate()/migrate_with()` 暴露，不创建 `entity/prelude.rs`。
 11. `sync_schema_with_comments()` 只补缺失对象；类型修改、删除和已有约束调整使用显式 migration。
 12. `derive(Sea)` 生成 `EntitySelect::sort/sort_or/order_by`：标准 Query 使用 `_order_by`，兼容
@@ -63,7 +65,7 @@ description: |
 ❌ `derive(Sea)` 后再手写 `pub type DeviceEvent = Model` 或另一套 qry/upsert wrapper
 ❌ 继续使用 `_ge/_g/_le/_l/_is_in/_bt/_not_bt/_start_with/_end_with/_not_null` 旧方法名
 ❌ 在每个业务 crate 重复编写前端排序字段到 `Column` 的映射
-✅ entity 声明模型契约，install.rs 统一补充同步和显式索引
+✅ entity 声明模型契约与普通联合索引，install.rs 只保留无法声明的复杂迁移
 ✅ `msg_evt` 直接使用宏生成的 `MsgEvt`、`MsgEvtQry`、`MsgEvtEntity` 和 `MsgEvtCol`
 ```
 
