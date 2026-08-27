@@ -1,0 +1,72 @@
+{
+  "skill_name": "admin-operator-ux",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "这个后台列表操作列太挤了，主体、认证人、设备都需要方便维护，请按实际操作习惯重构。",
+      "expected_output": "应识别为操作者体验任务：压缩操作列，把主体和认证人列变成聚焦维护入口，把设备数量链接到设备 Tab；技术字段移入详情，并检查各关联实体的独立 API 和权限。",
+      "files": [
+        "SKILL.md",
+        "references/patterns.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "任务表上有排序图标，但点击后数据顺序没变；通知进入列表后还要我自己找记录。",
+      "expected_output": "应同时检查前端排序事件、后端字段白名单和数据库排序；通知链接应携带记录 ID，并在页面加载后自动打开详情，而不是只修视觉图标。",
+      "files": [
+        "SKILL.md",
+        "references/patterns.md"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "这个编辑表单有二十多个字段，主体、账户、设备资料都混在一起，帮我排得更好用。",
+      "expected_output": "应按业务关联性分块；独立生命周期的主体和设备使用独立 API，并在同一主对象上下文通过 Tab 管理；长字段跨列，保存范围清晰。",
+      "files": [
+        "SKILL.md",
+        "references/patterns.md"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "批量导入两千条数据，接口经常超时，页面也不知道处理到哪了。",
+      "expected_output": "应使用持久化异步任务，立即返回任务记录；前端持续展示进度、成功数、失败数和逐条原因，刷新后仍可恢复查看，而不是增加 HTTP 超时时间。",
+      "files": [
+        "SKILL.md",
+        "references/patterns.md"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "普通用户只能看到授权号码的数据，管理员看全部；列表、导出和下拉选项都要一致。",
+      "expected_output": "应把授权范围落实到后端查询层，并复用到列表、候选下拉、详情、关联数据和导出；前端隐藏只作为体验处理，管理员全量访问需要明确判定。",
+      "files": [
+        "SKILL.md",
+        "references/patterns.md"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "以后所有后台页面都按这次方式：点击对应字段维护对应数据，请形成规范。",
+      "expected_output": "除完成当前页面外，应触发自我演进协议：匿名化记录反馈，更新稳定规则和模式，新增或调整 eval，并运行 repo-local skill 全量校验。",
+      "files": [
+        "SKILL.md",
+        "references/evolution.md",
+        "evals/evals.json"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "给官网首页做一个品牌宣传 Hero，要有大图和营销文案。",
+      "expected_output": "不应使用本 skill；这是品牌或营销页面设计，应转交 design、brand 或对应视觉 skill。",
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "只把这个按钮的上内边距从 6px 改成 8px，其他都不要动。",
+      "expected_output": "作为明确的单点样式修复执行最小改动，不应把一次性像素值提升为通用操作者规则或修改本 skill。",
+      "files": []
+    }
+  ]
+}
