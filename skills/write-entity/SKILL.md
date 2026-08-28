@@ -51,9 +51,15 @@ description: |
 9. 联合普通索引和额外联合唯一分组使用
    `model_attrs(..., kx(index/unique_index(name = "...", columns(...))))`；列清单顺序就是数据库索引
    顺序。表达式、部分、前缀等复杂索引仍在显式 migration 中创建。
-10. 业务迁移只由 `XxxInstall::migrate()/migrate_with()` 暴露，不创建 `entity/prelude.rs`。
-11. `sync_schema_with_comments()` 只补缺失对象；类型修改、删除和已有约束调整使用显式 migration。
-12. `derive(Sea)` 生成 `EntitySelect::sort/sort_or/order_by`：标准 Query 使用 `_order_by`，兼容
+10. 业务迁移只由 `XxxInstall::migrate()/migrate_with()` 暴露；每个 migration ID 的实现放在独立文件，
+    `install.rs` 和 `migration/mod.rs` 只负责模块声明、顺序注册和安装入口。同号迁移属于不同 ledger
+    或数据源时，使用 `param/task` 等子目录隔离。不创建 `entity/prelude.rs`。
+11. 固定字典、默认配置、内建账号/角色/权限、任务计划等初始化数据只放版本化 data migration；
+    不保留 `seed.rs`、`src/seed/` 或 `seed_all*` 兼容入口。migration ledger 已保证单次执行，因此
+    初始化 migration 直接插入，不使用存在性查询、`ON CONFLICT DO NOTHING` 或 upsert 模拟幂等；
+    解析父子 ID、外部 ID 映射等关系查询不属于重复性校验。
+12. `sync_schema_with_comments()` 只补缺失对象；类型修改、删除和已有约束调整使用显式 migration。
+13. `derive(Sea)` 生成 `EntitySelect::sort/sort_or/order_by`：标准 Query 使用 `_order_by`，兼容
     `sort + descending` 时由 `sort/sort_or` 通过实体列解析校验；业务 crate 不重复生成排序映射。
 
 ## 常见错误 vs 正确做法
@@ -62,10 +68,13 @@ description: |
 ❌ 用重复 rustdoc 代替表和字段 comment
 ❌ 在 relation 上创建数据库外键，或把联合普通索引误写成 unique_key
 ❌ 在 entity/prelude.rs 和 install.rs 维护两套迁移入口
+❌ 把多个 migration ID 的实现堆在 install.rs 或同一个聚合文件中
+❌ 用 seed 模块、存在性查询或冲突忽略包装已经由 migration ledger 保证单次执行的初始化数据
 ❌ `derive(Sea)` 后再手写 `pub type DeviceEvent = Model` 或另一套 qry/upsert wrapper
 ❌ 继续使用 `_ge/_g/_le/_l/_is_in/_bt/_not_bt/_start_with/_end_with/_not_null` 旧方法名
 ❌ 在每个业务 crate 重复编写前端排序字段到 `Column` 的映射
-✅ entity 声明模型契约与普通联合索引，install.rs 只保留无法声明的复杂迁移
+✅ entity 声明模型契约与普通联合索引；独立 migration 文件承载具体实现，install.rs 只注册顺序和入口
+✅ 初始化数据由具名 data migration 直接插入，后续调整追加新的 migration ID
 ✅ `msg_evt` 直接使用宏生成的 `MsgEvt`、`MsgEvtQry`、`MsgEvtEntity` 和 `MsgEvtCol`
 ```
 

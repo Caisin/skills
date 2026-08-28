@@ -67,6 +67,36 @@
       "prompt": "只把这个按钮的上内边距从 6px 改成 8px，其他都不要动。",
       "expected_output": "作为明确的单点样式修复执行最小改动，不应把一次性像素值提升为通用操作者规则或修改本 skill。",
       "files": []
+    },
+    {
+      "id": 9,
+      "prompt": "帮我检查所有后台页面的功能完整性，特别是点按钮后弹窗有没有真正打开、保存是否生效，以及有没有缺操作。",
+      "expected_output": "应按主要业务任务建立入口、handler、Modal/Drawer 或路由、初始数据、写 API、成功刷新和失败反馈的闭环证据；逐项核对缺失的编辑、删除、审核、批量、导入导出等动作；静态可证与必须组件测试或 Playwright 点验的项要分开报告。",
+      "files": [
+        "SKILL.md",
+        "references/patterns.md",
+        "references/evolution.md"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "表单要选择凭证中心的凭证，但新增凭证后下拉框还是旧数据，只能关掉表单重来。",
+      "expected_output": "应使用只保存稳定凭证 code 的引用选择器，在字段旁提供新增或凭证中心维护入口和刷新按钮；新增或维护后重新加载可用选项并保留当前表单，同时由服务端校验凭证存在、状态可用且类型匹配。",
+      "files": [
+        "SKILL.md",
+        "references/patterns.md",
+        "references/evolution.md"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "多个开发者账户共用一个密码，账户邮箱已经保存在业务表里，凭证下拉还要求每个账户单独建账号密码凭证。",
+      "expected_output": "应区分业务账号标识与可共享秘密：允许选择纯密码凭证并由多个账户引用同一 code，同时兼容账号密码凭证；现场新增默认创建纯密码类型，服务端仍只接受明确允许且 active 的凭证类型。",
+      "files": [
+        "SKILL.md",
+        "references/patterns.md",
+        "references/evolution.md"
+      ]
     }
   ]
 }

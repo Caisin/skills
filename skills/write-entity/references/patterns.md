@@ -153,10 +153,20 @@ SeaORM 官方 sync 主要按列集合判断缺失，KX 联合索引按显式索�
 ```text
 src/entity/<subdomain>/*.rs -> 表、枚举和 relation
 src/entity/mod.rs           -> 子域声明与稳定重导出
-src/install.rs              -> schema sync、备注和属性无法表达的复杂迁移
+src/migration/<id>.rs       -> 单个 migration ID 的具体实现
+src/migration/mod.rs        -> 模块声明与稳定重导出
+src/install.rs              -> schema sync、migration 顺序注册和安装入口
 ```
 
-不要创建 `src/entity/prelude.rs` 作为第二套迁移入口。
+每个 migration ID 必须使用独立文件。不同 migration ledger 或数据源存在相同 ID 时，使用
+`src/migration/param/`、`src/migration/task/` 等子目录隔离；对应 `mod.rs` 仍只做声明和重导出。
+不要把具体迁移实现堆入 `install.rs`，也不要创建 `src/entity/prelude.rs` 作为第二套迁移入口。
+落实本规则时只拆分当前触及 crate 的迁移，不顺手重构其它 crate 的历史迁移。
+
+固定字典、默认配置、内建账号/角色/权限和任务计划属于版本化 data migration。仓库不保留
+`seed.rs`、`src/seed/` 或 `seed_all*` 兼容入口。初始化 migration 由 ledger 保证只执行一次，写入时
+直接 insert；不要先查唯一键，也不要使用 `ON CONFLICT DO NOTHING` 或 upsert 包装幂等。为解析父子
+关系、外部 ID 映射或迁移存量数据而进行的查询仍按数据迁移语义保留。
 
 ## 常见错误
 
@@ -165,6 +175,8 @@ src/install.rs              -> schema sync、备注和属性无法表达的复�
 ❌ 用 unique_key 表达联合普通索引
 ❌ 在 relation 上省略 skip_fk，从而创建数据库外键
 ❌ 在业务模块中逐表迁移，绕过 XxxInstall
+❌ 在 install.rs 或 migration/mod.rs 中堆叠多个 migration ID 的实现
+❌ 在初始化 migration 中先查是否存在，或用冲突忽略/upsert 重复实现 ledger 幂等
 ❌ 为宏已生成的 alias、Query、ActiveModel setter、CRUD 或索引 helper 再写一层包装
 ❌ 已有 `sort/sort_or` 时继续逐字段匹配前端排序参数
 ```
@@ -176,5 +188,7 @@ src/install.rs              -> schema sync、备注和属性无法表达的复�
 ✅ 联合普通索引在实体 `model_attrs` 的 KX 索引声明中创建并显式固定列顺序
 ✅ relation 拥有侧声明 skip_fk
 ✅ 通过 XxxInstall::migrate()/migrate_with() 暴露迁移入口
+✅ 每个 migration ID 独立文件，聚合文件只声明模块并按顺序注册
+✅ 初始化数据直接 insert，默认值变化通过追加新的 migration ID 演进
 ✅ 先检查 `derive(Sea)` 生成契约，再只补业务特有行为
 ```

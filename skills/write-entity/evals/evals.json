@@ -52,6 +52,24 @@
         ".agents/skills/write-entity/SKILL.md",
         ".agents/skills/write-entity/references/patterns.md"
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "一个业务 crate 有多条 SeaORM data migration，而且 param 和 task 两个 ledger 都从 m000001 开始，文件应该怎么组织？",
+      "expected_output": "每个 migration ID 的实现必须放在独立文件；不同 ledger 或数据源使用 migration/param、migration/task 等子目录隔离同号 ID；各级 mod.rs 只声明和重导出，install.rs 只按稳定顺序注册 migrator 并暴露 migrate 入口。只整理当前触及 crate，不顺手重构其它历史迁移。",
+      "files": [
+        ".agents/skills/write-entity/SKILL.md",
+        ".agents/skills/write-entity/references/patterns.md"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "固定字典和默认管理员已经放进版本化 SeaORM data migration，还需要保留 seed.rs 并在插入前查询唯一键吗？",
+      "expected_output": "不需要。删除 seed.rs、src/seed/ 和 seed_all 兼容入口，初始化数据由具名 data migration 直接 insert；migration ledger 已保证单次执行，不再使用存在性查询、ON CONFLICT DO NOTHING 或 upsert 模拟幂等。父子关系 ID 和存量数据映射查询可以保留，默认值后续变化应追加新的 migration ID。",
+      "files": [
+        ".agents/skills/write-entity/SKILL.md",
+        ".agents/skills/write-entity/references/patterns.md"
+      ]
     }
   ]
 }
