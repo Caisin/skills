@@ -97,6 +97,16 @@
         "references/patterns.md",
         "references/evolution.md"
       ]
+    },
+    {
+      "id": 12,
+      "prompt": "TT 加白、Apple 账户和 SIM 实名都要能查看历史导入文件，要不要每个业务各做一个导入记录页面？",
+      "expected_output": "不应按业务复制历史页面。共用同一导入导出运行模型时，应提供一个公共历史页，按业务定义、方向和状态筛选，统一下载原文件、结果和错误明细；业务页只保留发起任务或跳转公共历史的入口。",
+      "files": [
+        "SKILL.md",
+        "references/patterns.md",
+        "references/evolution.md"
+      ]
     }
   ]
 }
