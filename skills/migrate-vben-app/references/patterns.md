@@ -133,6 +133,14 @@ fork 主分支
 5. 启动 dev server，用桌面浏览器验证登录、导航和关键 CRUD 流程。
 6. 最后用遗漏清单反查旧应用，不以“构建成功”等价于“业务完整”。
 
+## 9. 组件导出边界
+
+应用私有组件按目录维护：
+
+- `components/<module>/index.ts` 导出模块内组件、类型和工具。
+- `components/index.ts` 只做各模块的汇总 `export *`。
+- 不创建 `components/<module>.ts` 去重复转出 `components/<module>/`，避免同一模块出现两套导入入口。
+
 ## 常见错误
 
 ```text

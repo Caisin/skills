@@ -49,6 +49,12 @@ description: |
 7. fork 可长期保存自有 `apps/<product>`；面向官方的 PR 必须从干净的 `upstream/main` 建分支，不包含自有应用和产品配置。
 8. 完成标准至少包含 typecheck、目标测试、生产构建和桌面端页面烟测；存在已知错误时不能宣称迁移完成。
 
+### 组件目录导出
+
+`apps/*/src/components` 使用目录入口组织应用私有组件：每个组件子目录提供自己的
+`index.ts`，根 `components/index.ts` 统一汇总导出。禁止新增
+`components/<module>.ts` 作为同名子目录的薄转出文件；页面从组件子目录或根入口导入。
+
 ## 最小迁移顺序
 
 1. 确认仓库拓扑、remotes、目标 app 和所有权边界。

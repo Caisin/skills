@@ -53,6 +53,15 @@
       "files": [
         ".agents/skills/migrate-vben-app/SKILL.md"
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "Vben app 的 components 模块应该怎么导出？",
+      "expected_output": "要求每个组件子目录提供 index.ts，由根 components/index.ts 汇总，禁止新增与子目录同名的外层 ts 薄转出文件。",
+      "files": [
+        ".agents/skills/migrate-vben-app/SKILL.md",
+        ".agents/skills/migrate-vben-app/references/patterns.md"
+      ]
     }
   ]
 }
