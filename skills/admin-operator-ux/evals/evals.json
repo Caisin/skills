@@ -147,6 +147,17 @@
         "references/evolution.md",
         "evals/evals.json"
       ]
+    },
+    {
+      "id": 17,
+      "prompt": "测试通知弹框里有一个扩展参数 JSON，运营人员不知道支持哪些键，以后所有后台都要以使用体验为第一原则。",
+      "expected_output": "应删除普通业务表单中的原始 JSON 入口，把 provider 支持的稳定参数拆成有业务名称、合适组件、默认值和校验的字段；未知键没有可靠 schema 时不进入普通表单。编辑重发只恢复受支持字段，并同步演进记录、稳定规则和 eval。",
+      "files": [
+        "SKILL.md",
+        "references/patterns.md",
+        "references/evolution.md",
+        "evals/evals.json"
+      ]
     }
   ]
 }

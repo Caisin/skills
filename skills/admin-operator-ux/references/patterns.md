@@ -71,6 +71,7 @@ APP 数量 -> APP Tab
 - 时间使用 DatePicker/RangePicker，枚举使用 Select，布尔值使用 Switch/Checkbox。
 - 只读字段使用详情展示或禁用态组件，但不要让只读值看起来可以提交。
 - 保存按钮明确作用范围；独立 API 管理的分块独立保存。
+- 面向业务操作者时，不把 payload、扩展参数或协议对象直接作为 JSON 编辑器暴露。先按 provider 或业务类型列出稳定字段，用 Input、Select、Switch、文件选择等明确组件承载；未知键没有可靠语义时不进入普通表单，而不是用“高级参数”掩盖设计缺口。
 
 ## 4. 关联数据 Tab
 
