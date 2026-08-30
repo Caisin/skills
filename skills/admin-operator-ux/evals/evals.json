@@ -136,6 +136,17 @@
         "references/patterns.md",
         "references/evolution.md"
       ]
+    },
+    {
+      "id": 16,
+      "prompt": "凭证、Provider 和 SIM 卡下拉框左边太窄，刷新按钮也很占空间；配置步骤默认展开后首屏太长，这些类似组件以后统一处理。",
+      "expected_output": "应把同构引用选择器统一改为主选择器占满剩余宽度，刷新按钮紧贴右侧作为 suffix；多步骤配置指引默认折叠，标题和展开入口常显，步骤及外链一起展开，并保留键盘操作和 aria-expanded。应同步演进记录、稳定规则与 eval，而不是只修一个页面。",
+      "files": [
+        "SKILL.md",
+        "references/patterns.md",
+        "references/evolution.md",
+        "evals/evals.json"
+      ]
     }
   ]
 }
