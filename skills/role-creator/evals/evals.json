@@ -1,0 +1,23 @@
+{
+  "skill_name": "role-creator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "给订单模块创建管理员角色和只读角色，页面里的编辑弹窗会加载客户和商品选项。",
+      "expected_output": "先形成页面、按钮、弹窗依赖和 API 权限矩阵；菜单只绑定查询 API，管理按钮绑定写 API及弹窗依赖；通过前向迁移创建两个角色，并测试只读角色允许查询、拒绝写入。",
+      "files": ["references/patterns.md"]
+    },
+    {
+      "id": 2,
+      "prompt": "增加角色复制功能，让我复制全部权限后再修改新角色。",
+      "expected_output": "设计 Auth 单库事务复制源角色设置、au_role_perm 和 au_role_api；目标编码唯一；增加受独立按钮权限保护的复制 API 与弹窗，并验证集合相等和失败不留半成品。",
+      "files": ["references/patterns.md"]
+    },
+    {
+      "id": 3,
+      "prompt": "给普通用户增加只能查看自己资料的数据范围过滤。",
+      "expected_output": "说明这是业务 service 的数据权限/所有权边界，不应只通过角色创建解决；转交对应 write-svc，并仅在同时新增角色模板时使用本 skill。",
+      "files": []
+    }
+  ]
+}
