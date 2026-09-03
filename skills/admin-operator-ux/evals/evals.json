@@ -180,6 +180,17 @@
         "references/evolution.md",
         "evals/evals.json"
       ]
+    },
+    {
+      "id": 20,
+      "prompt": "批量导入实名提示完成，但我不知道哪些号码成功、哪些失败；以后还需要在导入导出记录里查到并下载。",
+      "expected_output": "应在终态展示成功和失败计数，并生成包含每条号码、状态和失败原因的结果文件；公共导入弹窗提供直接下载及当前业务历史入口，历史页按定义筛选并允许在保留期内再次下载。公共 executor 必须持久化 handler 返回的结果产物。",
+      "files": [
+        "SKILL.md",
+        "references/patterns.md",
+        "references/evolution.md",
+        "evals/evals.json"
+      ]
     }
   ]
 }
