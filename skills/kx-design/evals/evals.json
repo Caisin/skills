@@ -22,7 +22,7 @@
     {
       "id": 3,
       "prompt": "设计一张带表字段备注、联合索引和存量数据回填的 SeaORM 2 表。",
-      "expected_output": "应区分 sync_schema_with_comments、install.rs 显式联合索引和数据迁移；说明 DDL 审查、备份、SQLite 验收及目标数据库部署前验证，不能恢复 Toasty/TcMgr。",
+      "expected_output": "应区分版本化 baseline、显式索引 migration 和存量数据迁移；说明 DDL 审查、备份、SQLite 验收及目标数据库部署前验证，不能恢复 Toasty/TcMgr。",
       "files": [
         ".agents/skills/kx-design/SKILL.md",
         ".agents/skills/write-entity/SKILL.md"

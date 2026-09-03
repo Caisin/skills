@@ -4,7 +4,8 @@
 
 这里的 alias、`qry/sel/get/get_opt`、字段条件链、`update_set`、`insert/upsert/upsert_many` 和
 ActiveModel 的 `set_<field>` 均由 entity 的 `model_attrs(derive(Sea))` 生成。业务 service 直接使用，
-不要重复声明 `pub type Xxx = Model`，也不要为了“统一入口”再包一层无业务规则的 CRUD service。
+不要为了“统一入口”再包一层无业务规则的 CRUD service。旧公共 API 所需语义 alias 可以保留，
+新代码默认使用表名生成 alias。
 
 ```rust
 let lots = AstLot::sel()
@@ -17,7 +18,7 @@ let lots = AstLot::sel()
     .await?;
 ```
 
-前端动态排序使用生成的 `sort/sort_or`，由实体 `Column::from_str` 校验字段，不在 svc 重复字段匹配：
+前端动态排序优先使用生成的 `sort/sort_or`，由实体 `Column::from_str` 校验字段：
 
 ```rust
 let page = AstItem::sel()
@@ -35,8 +36,8 @@ let page = AstItem::sel()
 也可通过 `_order_by[asc]=id` / `_order_by[desc]=created_at` 传递 `OrderBy`。分页仍要追加主键作为
 稳定次级排序。
 
-聚合投影、复合 `Condition`、批量更新和 CAS 可以使用底层 SeaORM builder；不要机械替换动态
-JOIN 或聚合表达式。
+聚合投影、复合 `Condition`、批量更新和 CAS 可以使用底层 SeaORM builder。接口需要字段别名或
+对非法排序返回稳定错误时，可以保留显式排序白名单。
 
 表名决定生成 alias，例如 `msg_evt -> MsgEvt`、`ast_lot -> AstLot`。若旧业务名称与表名不同，迁移时
 优先改调用方使用生成 alias；只有公共 API 兼容有明确必要时才保留独立语义类型，不能用手写 alias
@@ -92,6 +93,9 @@ item.upsert(db).await?;
 
 自然唯一键不是 generated upsert 的冲突目标。需要按自然键创建时，先按业务语义选择拒绝重复，或显式构造 `OnConflict`。
 
+已加载记录转换成 `ActiveModel` 后，SeaORM 原生 `update` 只提交已设置字段，适合普通局部更新。
+不要机械替换为可能在记录缺失时插入的 `upsert`。CAS 仍必须使用带条件且可检查影响行数的更新。
+
 ## Default Model Fields
 
 实体已 `derive(Default)`，且可选字段的 `None`、计数的 `0`、开关的 `false` 就是统一初始状态时，省略重复初始化：
@@ -114,23 +118,21 @@ let run = TaskRun {
 ## Transaction Shape
 
 ```rust
-use crate::SeaTransExt as _;
-use kx_sea_orm::SeaTrans;
+use sea_orm::TransactionTrait;
 
-SeaTrans::t(|trans| {
+db.transaction(|tx| {
     Box::pin(async move {
-        let tx = trans.asset().await?;
-        validate(&req)?;
         let row = write_primary(tx, &req).await?;
         write_ledger(tx, &row).await?;
-        enqueue_outbox(tx, &row).await?;
         Ok(row)
     })
 })
-.await
+.await?;
 ```
 
-`SeaTrans::t` 统一处理成功提交和失败回滚；需要让调用方区分领域错误与数据库错误时使用 `SeaTrans::sea_trans`。事务必须覆盖所有需要原子提交的数据库写入。远端 SDK 调用通常不放在长事务内，使用 outbox、任务或可重试状态机衔接。
+单数据源直接使用 SeaORM transaction helper。需要从注册 alias 获取事务或协调多个数据源时使用
+`SeaTrans::t/sea_trans`；多个数据源只按顺序提交，是 best-effort 而非分布式原子事务。远端 SDK
+调用通常不放在长事务内，使用 outbox、任务或可重试状态机衔接。
 
 ## Optimistic Concurrency
 
@@ -173,19 +175,19 @@ use crate::SeaOrmExt as _;
 
 ```text
 ❌ 先读取 version，再无条件 upsert
-❌ 手写 begin/commit/rollback，重复实现 SeaTrans 的控制流
+❌ 手写 begin/commit/rollback，或把单库事务误写成跨库协调
 ❌ 对不可变流水或审计记录做覆盖写
 ❌ 分页查询没有稳定排序
 ❌ 把外部 SDK 调用放进长数据库事务
-❌ 为 `derive(Sea)` 已生成的 alias、Query、setter、CRUD 再建无业务逻辑 wrapper
-❌ 为 `sort + descending` 手写逐字段 `match`，或把排序字段直接拼 SQL
+❌ 为 `derive(Sea)` 已生成的 Query、setter、CRUD 再建无业务逻辑 wrapper
+❌ 在无需别名/错误契约时重复排序 match，或把排序字段直接拼 SQL
 ```
 
 ## 正确做法
 
 ```text
 ✅ CAS 和状态机使用带前置条件的更新
-✅ 使用 SeaTrans::t 或 SeaTrans::sea_trans 统一事务控制流
+✅ 单库用 SeaORM transaction helper；alias/跨库协调使用 SeaTrans
 ✅ 不可变记录使用 insert
 ✅ 分页和批处理提供稳定排序
 ✅ 前端排序使用 `sort/sort_or`，默认排序用类型化 fallback

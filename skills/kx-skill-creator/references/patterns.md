@@ -31,21 +31,19 @@ python3 .agents/skills/kx-skill-creator/scripts/skill_tool.py init my-aigc-skill
 python3 .agents/skills/kx-skill-creator/scripts/skill_tool.py validate
 ```
 
-## 常见错误
+## 内容预算
 
 ```text
-❌ 骨架生成后不补真实触发词与真实示例，直接提交
-❌ 改了 skill 结构却不跑 validate
-❌ 没有区分 entry / practice / sdk / aigc 等不同语义，导致 description 与正文错位
+SKILL 主文件最多 160 行，只保留触发边界、核心规则、reference 导航和验证。详细模板、枚举和
+长清单进入 references；正向与边界行为进入 evals，不再在主文件重复完整示例。
 ```
 
 ## 正确做法
 
 ```text
-✅ 先选对 --kind，再补仓库真实内容
-✅ 提交前统一跑 validate
-✅ 新增或调整 skill 规范时，同步更新 AGENTS.md 与相关 repo-local skills
-✅ 如果 skill 面向的是可复用 crate，默认使用 crate 视角：先写 crate 名、依赖方式、对外入口，再写源码结构
+✅ 先选对 kind，再补真实触发词与最小规则
+✅ 同步 SKILL、references 和正向/边界 eval
+✅ 提交前运行全量 validate
 ```
 
 ## crate 视角补充规则

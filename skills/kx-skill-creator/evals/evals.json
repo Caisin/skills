@@ -18,6 +18,15 @@
       "prompt": "我要给一个能被其他项目直接依赖的业务 crate 写 skill，这类 skill 应该怎么写？",
       "expected_output": "应命中 kx-skill-creator，并强调这类 skill 默认使用 crate 视角：优先写 crate 名、Cargo 依赖方式、对外入口和下游接入模板，而不是只写源码目录路径。",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "skill 主文件已经超过 300 行，而且重复了 references 和完整示例，怎么精简？",
+      "expected_output": "应把主文件压到 160 行以内，只保留触发边界、核心规则、reference 导航和验证；模板与长清单移入 references，行为样例放 evals，并运行全量 validate。",
+      "files": [
+        ".agents/skills/kx-skill-creator/SKILL.md",
+        ".agents/skills/kx-skill-creator/scripts/skill_tool.py"
+      ]
     }
   ]
 }

@@ -1,0 +1,17 @@
+{
+  "skill_name": "ui-ux-pro-max",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "为运营后台选择信息密度、配色和表格交互方案。",
+      "expected_output": "应按产品类型查询本地 UX 数据，并把结果映射到现有组件和 token。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "修复 Rust service 的 CAS 更新。",
+      "expected_output": "不应触发 UI/UX 搜索，应 handoff 到 write-svc。",
+      "files": []
+    }
+  ]
+}

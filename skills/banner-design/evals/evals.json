@@ -1,0 +1,17 @@
+{
+  "skill_name": "banner-design",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "为产品发布制作 LinkedIn 和网站 Hero 横幅。",
+      "expected_output": "应确认平台尺寸与品牌资产，给出少量方向，并导出检查后的位图。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "帮我设计整套品牌语气和命名规则。",
+      "expected_output": "应 handoff 到 brand，而不是在 banner-design 展开品牌策略。",
+      "files": []
+    }
+  ]
+}

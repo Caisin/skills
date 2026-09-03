@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "写一个资产扣减 service：按到期时间消费批次，保证幂等并在同一事务写流水和 outbox。",
-      "expected_output": "应命中 write-svc，把校验、幂等、事务、稳定排序、批次更新、流水和 outbox 放在 svc；通过 SeaTrans::t 获取 alias 事务，不手写 begin/commit/rollback；静态查询优先使用实体 alias 的 get/qry/sel，CAS 使用可校验影响行数的条件更新，不用 upsert 绕过并发约束。",
+      "expected_output": "应命中 write-svc，把校验、幂等、稳定排序、批次更新、流水和 outbox 放在同一事务；单数据源可用 SeaORM transaction helper，通过注册 alias 或跨库协调时使用 SeaTrans；CAS 必须检查影响行数。",
       "files": [
         ".agents/skills/write-svc/SKILL.md",
         ".agents/skills/write-svc/references/patterns.md"
@@ -64,7 +64,7 @@
     {
       "id": 8,
       "prompt": "后台列表传 sort 和 descending，是否要在 service 里 match 每个可排序字段？",
-      "expected_output": "不需要。应在 Alias::sel() 上使用生成的 sort/sort_or；分页有默认顺序时用 sort_or(..., |s| s.asc_xxx()) 做类型化回退，并追加主键作为稳定次级排序。生成器通过实体 Column::from_str 校验字段，不能把前端字符串直接拼 SQL。",
+      "expected_output": "实体字段与静默回退契约一致时使用 sort/sort_or，并追加主键稳定排序；若 API 需要字段别名或对非法字段返回稳定 invalid_sort 错误，则保留显式白名单，不能拼接原始 SQL。",
       "files": [
         ".agents/skills/write-svc/SKILL.md",
         ".agents/skills/write-svc/references/patterns.md"

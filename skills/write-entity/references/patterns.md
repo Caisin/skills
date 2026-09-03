@@ -38,10 +38,11 @@ impl ActiveModelBehavior for ActiveModel {}
 ## `derive(Sea)` 已生成的契约
 
 `model_attrs(derive(Sea))` 会根据 `table_name` 的 UpperCamelCase 名称生成业务 alias。例如
-`msg_evt` 生成 `MsgEvt`，`ast_lot` 生成 `AstLot`。不要再手写：
+`msg_evt` 生成 `MsgEvt`，`ast_lot` 生成 `AstLot`。新代码直接使用生成 alias；只有已发布公共 API
+确实需要兼容旧业务名称时，才保留语义 alias：
 
 ```rust
-// 错误：宏已经生成表名对应的 Model alias。
+// 兼容入口，不作为新代码默认写法。
 pub type DeviceEvent = Model;
 ```
 
@@ -114,24 +115,19 @@ pub dept: BelongsTo<super::dept::Entity>,
 ## Install-owned Migration
 
 ```rust
-use crate::SeaOrmExt as _;
-use anyhow::Result;
-use kx_sea_common::SchemaCommentSyncExt;
-use sea_orm::DatabaseConnection;
+#[path = "migration/m000002_add_status.rs"]
+mod m000002_add_status;
+
+kx_sea_orm::define_frozen_schema_migrator!(
+    JobMigrator,
+    "__kx_job_migrations",
+    SCHEMA_BASELINE,
+    [m000002_add_status::Migration]
+);
 
 pub struct JobInstall;
 
-impl JobInstall {
-    pub async fn migrate() -> Result<()> {
-        let db = kx_sea_orm::SeaOrms::job().await?;
-        Self::migrate_with(&db).await
-    }
-
-    pub async fn migrate_with(db: &DatabaseConnection) -> Result<()> {
-        db.sync_schema_with_comments("kx-biz-job::entity::*").await?;
-        Ok(())
-    }
-}
+// migrate/migrate_with 只调用统一 migrator；具体迁移放独立文件。
 ```
 
 ## Index Boundary
@@ -155,7 +151,7 @@ src/entity/<subdomain>/*.rs -> 表、枚举和 relation
 src/entity/mod.rs           -> 子域声明与稳定重导出
 src/migration/<id>.rs       -> 单个 migration ID 的具体实现
 src/migration/mod.rs        -> 模块声明与稳定重导出
-src/install.rs              -> schema sync、migration 顺序注册和安装入口
+src/install.rs              -> baseline/migration 顺序注册和安装入口
 ```
 
 每个 migration ID 必须使用独立文件。不同 migration ledger 或数据源存在相同 ID 时，使用
@@ -177,7 +173,7 @@ src/install.rs              -> schema sync、migration 顺序注册和安装入�
 ❌ 在业务模块中逐表迁移，绕过 XxxInstall
 ❌ 在 install.rs 或 migration/mod.rs 中堆叠多个 migration ID 的实现
 ❌ 在初始化 migration 中先查是否存在，或用冲突忽略/upsert 重复实现 ledger 幂等
-❌ 为宏已生成的 alias、Query、ActiveModel setter、CRUD 或索引 helper 再写一层包装
+❌ 为宏已生成的 Query、ActiveModel setter、CRUD 或索引 helper 再写一层包装
 ❌ 已有 `sort/sort_or` 时继续逐字段匹配前端排序参数
 ```
 
@@ -190,5 +186,5 @@ src/install.rs              -> schema sync、migration 顺序注册和安装入�
 ✅ 通过 XxxInstall::migrate()/migrate_with() 暴露迁移入口
 ✅ 每个 migration ID 独立文件，聚合文件只声明模块并按顺序注册
 ✅ 初始化数据直接 insert，默认值变化通过追加新的 migration ID 演进
-✅ 先检查 `derive(Sea)` 生成契约，再只补业务特有行为
+✅ 先检查 `derive(Sea)` 生成契约；公共兼容 alias 需有明确旧 API 依据
 ```

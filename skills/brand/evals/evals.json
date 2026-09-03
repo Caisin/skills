@@ -1,0 +1,17 @@
+{
+  "skill_name": "brand",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "整理品牌声音、视觉规范和资产目录。",
+      "expected_output": "应命中 brand，并按 references 检查声音、视觉和资产一致性。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "只修复后台表格的分页交互。",
+      "expected_output": "不应展开品牌策略，应 handoff 到后台 UX 或前端实现 skill。",
+      "files": []
+    }
+  ]
+}

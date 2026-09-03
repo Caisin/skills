@@ -1,0 +1,17 @@
+{
+  "skill_name": "ui-styling",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "用 shadcn 和 Tailwind 实现可访问的响应式表单。",
+      "expected_output": "应复用现有组件与 token，并验证键盘、焦点、错误和移动布局。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "设计数据库事务和幂等策略。",
+      "expected_output": "不应命中 UI styling，应 handoff 到工程设计或 service skill。",
+      "files": []
+    }
+  ]
+}

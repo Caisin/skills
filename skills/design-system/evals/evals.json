@@ -1,0 +1,17 @@
+{
+  "skill_name": "design-system",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "为管理端建立明暗主题 token 和组件状态规范。",
+      "expected_output": "应采用 primitive、semantic、component 三层并验证状态与对比度。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "生成一张社交媒体宣传图。",
+      "expected_output": "应 handoff 到 banner-design 或 design，不在 token skill 中制作成品图。",
+      "files": []
+    }
+  ]
+}

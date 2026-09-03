@@ -1,0 +1,17 @@
+{
+  "skill_name": "slides",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "把业务方案做成可演示的 HTML slides。",
+      "expected_output": "应命中 slides，使用统一 token、布局和逐页渲染验证。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "只需要一张广告横幅。",
+      "expected_output": "应 handoff 到 banner-design。",
+      "files": []
+    }
+  ]
+}

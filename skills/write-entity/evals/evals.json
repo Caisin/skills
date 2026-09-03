@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "给 asset 增加一张 SeaORM 2 dense entity，带表字段备注、联合唯一索引和迁移入口。",
-      "expected_output": "应命中 write-entity，使用 #[sea_orm::model] + model_attrs(derive(Sea))，通过 comment 写表字段备注，通过同名 unique_key 表达联合唯一索引，并把 schema sync 放在 install.rs 的 XxxInstall::migrate_with()。",
+      "expected_output": "应命中 write-entity，使用 #[sea_orm::model] + model_attrs(derive(Sea))，通过 comment 写表字段备注，通过同名 unique_key 表达联合唯一索引，并由独立 migration 和 install.rs 的 XxxInstall 统一执行。",
       "files": [
         ".agents/skills/write-entity/SKILL.md",
         ".agents/skills/write-entity/references/patterns.md"
@@ -29,7 +29,7 @@
     {
       "id": 4,
       "prompt": "msg_evt 已经使用 model_attrs(derive(Sea))，还需要写 pub type DeviceEvent = Model 和一套 DeviceEventQuery 吗？",
-      "expected_output": "不需要。应说明 derive(Sea) 已按表名生成 MsgEvt、MsgEvtQry、MsgEvtModify、MsgEvtEntity、MsgEvtCol、COLUMN、字段条件链和常用 CRUD；业务代码直接使用这些契约，不重复手写 alias、Query、setter 或 CRUD wrapper。",
+      "expected_output": "新代码不需要。应直接使用 derive(Sea) 生成的 MsgEvt 及 Query、setter 和 CRUD；只有已发布公共 API 需要兼容旧语义名称时才保留 alias，不再复制 Query 或 CRUD wrapper。",
       "files": [
         ".agents/skills/write-entity/SKILL.md",
         ".agents/skills/write-entity/references/patterns.md"
