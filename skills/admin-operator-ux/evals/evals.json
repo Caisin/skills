@@ -158,6 +158,28 @@
         "references/evolution.md",
         "evals/evals.json"
       ]
+    },
+    {
+      "id": 18,
+      "prompt": "详情 Drawer 里的编辑按钮能触发 handler，但打开的编辑框显示在 Drawer 下面，实际点不到。",
+      "expected_output": "应识别为交互闭环失败：显式让子 Modal 的层级高于父 Drawer，并核对遮罩、焦点和关闭后返回父上下文；不能只确认 open 状态或依赖 DOM 声明顺序。静态审查后仍应通过组件测试或浏览器点验可见性。",
+      "files": [
+        "SKILL.md",
+        "references/patterns.md",
+        "references/evolution.md",
+        "evals/evals.json"
+      ]
+    },
+    {
+      "id": 19,
+      "prompt": "一个号码分组可能关联几百个号码和用户，现在都塞在多选下拉框里，查看和删除很难，而且操作列还重复放了号码、用户按钮。",
+      "expected_output": "应让数量列直接进入维护面，操作列移除重复入口；号码和用户在 Drawer 或 Tab 内使用分页表格展示并逐项移除，独立的添加弹层才使用搜索选择器。明确增删的持久化时机，并在完成后刷新表格和数量。",
+      "files": [
+        "SKILL.md",
+        "references/patterns.md",
+        "references/evolution.md",
+        "evals/evals.json"
+      ]
     }
   ]
 }
