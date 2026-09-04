@@ -125,6 +125,9 @@ src/router.rs           -> 跨功能路由聚合与 finish
 src/ctl/mod.rs          -> 模块声明和稳定重导出
 ```
 
+单个业务实现文件最多 1000 行；按功能路由或业务子域拆分，`mod.rs` 不放 handler 实现，也不使用
+`include!` 文本拼接。共享 extractor/响应 helper 只在至少两个子模块使用时进入窄 helper 模块。
+
 ## 常见错误
 
 ```text

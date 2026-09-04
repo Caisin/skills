@@ -52,6 +52,15 @@
         ".agents/skills/write-ctl/SKILL.md",
         ".agents/skills/write-ctl/references/patterns.md"
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "ctl/mod.rs 已经超过 1000 行，继续把新 handler 加进去可以吗？",
+      "expected_output": "不可以。应按功能拆成 ctl/<domain>.rs，每个实现文件不超过 1000 行；mod.rs 只保留模块声明和稳定重导出，不使用 include! 拼接。",
+      "files": [
+        ".agents/skills/write-ctl/SKILL.md",
+        ".agents/skills/write-ctl/references/patterns.md"
+      ]
     }
   ]
 }

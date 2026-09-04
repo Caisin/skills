@@ -25,6 +25,7 @@ service 负责业务规则与一致性；entity/Schema 交给 `write-entity`，H
 7. 外部调用不占用长事务，使用 outbox、持久化任务或可重试状态机衔接。
 8. `sort/sort_or` 适用于实体字段与回退语义一致的列表；需要字段别名或稳定 `invalid_sort` 错误时保留显式白名单。
 9. 状态、时间、版本和权限字段显式赋值；仅稳定的 `None/0/false` 用 `..Default::default()`。
+10. 单个业务实现文件不超过 1000 行；按子域拆到 `svc/<domain>.rs`，`mod.rs` 只声明和重导出，禁止用 `include!` 拼接超长实现。
 
 ## 验证
 

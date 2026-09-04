@@ -171,6 +171,12 @@ use crate::SeaOrmExt as _;
 
 只有真实跨库调用才声明多个 alias。单 alias 通过 `SeaTrans` 获取的仍是普通数据库事务；多个 alias 按顺序提交，不提供分布式原子性。
 
+## File Boundary
+
+业务实现文件最多 1000 行。按稳定子域拆分，跨子域 helper 使用最小的 `pub(super)` 可见性；
+`svc/mod.rs` 只声明模块与重导出公共 service。不得用 `include!` 保留单一巨型模块，也不得为了拆行数
+把一个函数或事务任意截断到多个文件。
+
 ## 常见错误
 
 ```text

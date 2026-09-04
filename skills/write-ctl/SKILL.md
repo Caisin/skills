@@ -22,6 +22,7 @@ controller 只做 HTTP 协议适配；查询、校验、事务和多表编排进
 4. 分页分别提取 `QsQuery<条件>` 与 `QsQuery<Paging>`；过滤 DTO 不重复分页字段，也不使用 `deny_unknown_fields` 排斥另一组 query 参数。
 5. 单表公开字段可直接使用生成 Query；有别名、组合条件或隐藏字段时定义协议 DTO，由 svc 映射。
 6. 路径使用 Axum 0.8 `{id}`；不使用裸 `Router` 绕过 catalog。
+7. 单个业务实现文件不超过 1000 行；按功能拆到 `ctl/<domain>.rs`，`mod.rs` 只声明和重导出，禁止 `include!`。
 
 ## 验证
 

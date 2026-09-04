@@ -69,6 +69,15 @@
         ".agents/skills/write-svc/SKILL.md",
         ".agents/skills/write-svc/references/patterns.md"
       ]
+    },
+    {
+      "id": 9,
+      "prompt": "业务 service 已经有 3000 行，能不能用 include! 切成几个片段保持一个模块？",
+      "expected_output": "不应该。每个实现文件不得超过 1000 行，应按稳定子域拆成真实 Rust module；mod.rs 只声明和重导出，跨模块 helper 使用最小 pub(super) 可见性，不能用 include! 规避边界。",
+      "files": [
+        ".agents/skills/write-svc/SKILL.md",
+        ".agents/skills/write-svc/references/patterns.md"
+      ]
     }
   ]
 }
