@@ -2,6 +2,12 @@
   "skill_name": "admin-operator-ux",
   "evals": [
     {
+      "id": 21,
+      "prompt": "编辑弹窗里的勾选框和文字上下分开了，另一个表单也这样，但文本输入框仍需要标签在上方。",
+      "expected_output": "先检查业务 label/input 的宽泛布局选择器及子组件根标签；将纵向布局限定到普通字段 class，保留 Checkbox/Radio 原生布局和禁用语义，不用定位偏移或改变逻辑修复。浏览器验证桌面/手机标签同行、切换勾选及禁用状态，并同步稳定规则与 eval。",
+      "files": ["SKILL.md", "references/patterns.md", "references/evolution.md"]
+    },
+    {
       "id": 1,
       "prompt": "这个后台列表操作列太挤了，主体、认证人、设备都需要方便维护，请按实际操作习惯重构。",
       "expected_output": "应识别为操作者体验任务：压缩操作列，把主体和认证人列变成聚焦维护入口，把设备数量链接到设备 Tab；技术字段移入详情，并检查各关联实体的独立 API 和权限。",
