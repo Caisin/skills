@@ -2,6 +2,18 @@
   "skill_name": "admin-operator-ux",
   "evals": [
     {
+      "id": 23,
+      "prompt": "批量检查已经提示哪些表有问题，但逐表策略有几百张表，要翻很多页才能修改。",
+      "expected_output": "提供覆盖完整清单的表名和错误搜索、错误筛选，失败表名按稳定身份精确定位维护行；筛选重置页码，编辑保留定位上下文，保存仍包含完整配置。",
+      "files": ["SKILL.md", "references/patterns.md", "references/evolution.md"]
+    },
+    {
+      "id": 24,
+      "prompt": "列表服务端分页，只读用户想搜索失败记录；筛选前还勾选了另一页数据，可以直接过滤当前页并复用批量保存吗？",
+      "expected_output": "不能把当前页过滤当全量搜索，应复用或补充真实查询契约；只读用户只能定位查看，不能扩大写权限。筛选清除隐藏勾选或明确批量范围，不能用搜索结果覆盖完整对象数据。",
+      "files": ["SKILL.md", "references/patterns.md", "references/evolution.md"]
+    },
+    {
       "id": 21,
       "prompt": "编辑弹窗里的勾选框和文字上下分开了，另一个表单也这样，但文本输入框仍需要标签在上方。",
       "expected_output": "先检查业务 label/input 的宽泛布局选择器及子组件根标签；将纵向布局限定到普通字段 class，保留 Checkbox/Radio 原生布局和禁用语义，不用定位偏移或改变逻辑修复。浏览器验证桌面/手机标签同行、切换勾选及禁用状态，并同步稳定规则与 eval。",
