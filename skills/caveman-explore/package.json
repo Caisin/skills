@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "description": "Read-only FastContext exploration skill with parallel repository search and citation-only output.",
-  "files": ["SKILL.md"],
+  "files": ["GUIDE.md"],
   "scripts": {
     "test": "node --test --test-force-exit tests/*.mjs"
   }

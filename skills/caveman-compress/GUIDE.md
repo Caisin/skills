@@ -17,9 +17,9 @@ Compress natural language files (CLAUDE.md, todos, preferences) into caveman-spe
 
 ## Process
 
-1. The compression scripts live in `scripts/` (adjacent to this SKILL.md). If the path is not immediately available, search for `scripts/__main__.py` next to this SKILL.md.
+1. The compression scripts live in `scripts/` (adjacent to this GUIDE.md). If the path is not immediately available, search for `scripts/__main__.py` next to this GUIDE.md.
 
-2. From the directory containing this SKILL.md, run:
+2. From the directory containing this GUIDE.md, run:
 
 python3 -m scripts <absolute_filepath>
 

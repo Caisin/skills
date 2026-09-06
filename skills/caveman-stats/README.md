@@ -32,5 +32,5 @@ Est. net: -51,394 (caveman cost more than it saved for this workload — conside
 
 ## See also
 
-- [`SKILL.md`](./SKILL.md) — hook contract and mechanics
+- [`GUIDE.md`](./GUIDE.md) — hook contract and mechanics
 - [Caveman README](../../README.md) — repo overview

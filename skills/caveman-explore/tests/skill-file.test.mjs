@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const skillFile = join(dirname(fileURLToPath(import.meta.url)), "..", "SKILL.md");
+const skillFile = join(dirname(fileURLToPath(import.meta.url)), "..", "GUIDE.md");
 const md = readFileSync(skillFile, "utf8");
 
 function frontmatter(text) {

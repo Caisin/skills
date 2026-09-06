@@ -5,7 +5,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const skill = readFileSync(
-  join(dirname(fileURLToPath(import.meta.url)), "..", "SKILL.md"),
+  join(dirname(fileURLToPath(import.meta.url)), "..", "GUIDE.md"),
   "utf8",
 );
 

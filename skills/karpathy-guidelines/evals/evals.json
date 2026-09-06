@@ -2,6 +2,12 @@
   "skill_name": "karpathy-guidelines",
   "evals": [
     {
+      "id": 3,
+      "prompt": "请系统简化任务模块，包括公共 Rust API、前端和全部调用方，不要只打补丁。",
+      "expected_output": "允许目标内的跨模块重构，基于现有代码选择方案并迁移调用方；不以最小行数或固定模板限制设计，保留权限、一致性和验证证据。",
+      "files": ["SKILL.md", "references/patterns.md"]
+    },
+    {
       "id": 1,
       "prompt": "帮我修这个 Rust 函数的边界 bug，要求最小改动，不要顺手重构。",
       "expected_output": "应使用 karpathy-guidelines：先明确最小修复和验证目标，只修改直接相关代码，避免无关重构，并报告验证证据。",

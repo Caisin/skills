@@ -34,5 +34,5 @@ Deactivate:
 
 ## See also
 
-- [`SKILL.md`](./SKILL.md) — full reference card
+- [`GUIDE.md`](./GUIDE.md) — full reference card
 - [Caveman README](../../README.md) — repo overview
